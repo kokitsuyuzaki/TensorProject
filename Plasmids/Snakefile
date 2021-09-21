@@ -1,0 +1,29 @@
+from snakemake.utils import min_version
+
+#
+# Setting
+#
+# container: "docker://koki/tensor-project-plasmids:202XXXXX"
+
+METHODS = ['Mahalanobis', 'Tensor']
+
+rule all:
+    input:
+        "XXXXXX"
+
+rule data:
+    input:
+        'XXXXX'
+    output:
+        'XXXXX'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/data_{m}.txt'
+    log:
+        'logs/data_{m}.log'
+    shell:
+        'src/data.sh >& {log}'
+
+# rule roc?
+# rule plot?
