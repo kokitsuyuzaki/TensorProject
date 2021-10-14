@@ -1,0 +1,100 @@
+import pandas as pd
+from snakemake.utils import min_version
+
+#
+# Setting
+#
+min_version("6.0.5")
+container: 'docker://koki/tensor-project-parasite:20211013'
+
+METHODS = ['pca',
+    'time_guided_pca', 'wol_guided_pca',
+    'parasm_guided_pca', 'all_guided_pca', 'all_guided_pca2',
+    'time_guided_cca', 'wol_guided_cca',
+    'parasm_guided_cca',
+    'time_guided_pls', 'wol_guided_pls',
+    'parasm_guided_pls']
+GMETHODS = [
+    'time_guided_pca', 'wol_guided_pca',
+    'parasm_guided_pca', 'all_guided_pca', 'all_guided_pca2',
+    'time_guided_cca', 'wol_guided_cca',
+    'parasm_guided_cca',
+    'time_guided_pls', 'wol_guided_pls',
+    'parasm_guided_pls']
+SPECIES = ['at', 'pj']
+
+rule all:
+    input:
+        expand('plot/pca_{s}.png', s=SPECIES),
+        expand('plot/{g}.png', g=GMETHODS)
+
+rule preprocess:
+    output:
+        'data/objects.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/objects.txt'
+    log:
+        'logs/objects.log'
+    shell:
+        'src/preprocess.sh >& {log}'
+
+rule method:
+    input:
+        'data/objects.RData'
+    output:
+        'output/{m}.RData'
+    wildcard_constraints:
+        m='|'.join([re.escape(x) for x in METHODS])
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/{m}.txt'
+    log:
+        'logs/{m}.log'
+    shell:
+        'src/{wildcards.m}.sh {output} >& {log}'
+
+rule sample_plot_pca:
+    input:
+        'output/pca.RData'
+    output:
+        'plot/pca_{s}.png'
+    benchmark:
+        'benchmarks/sample_plot_pca_{s}.txt'
+    log:
+        'logs/sample_plot_pca_{s}.log'
+    shell:
+        'src/sample_plot_pca.sh >& {log}'
+
+# rule sample_plot_nmf:
+#     input:
+#         'output/nmf.RData'
+#     output:
+#         'plot/nmf_{s}.png'
+#     benchmark:
+#         'benchmarks/sample_plot_nmf_{s}.txt'
+#     log:
+#         'logs/sample_plot_nmf_{s}.log'
+#     shell:
+#         'src/sample_plot_nmf.sh >& {log}'
+
+rule sample_plot_gmethod:
+    input:
+        'output/{g}.RData'
+    output:
+        'plot/{g}.png'
+    wildcard_constraints:
+        g='|'.join([re.escape(x) for x in GMETHODS])
+    benchmark:
+        'benchmarks/sample_plot_gmethod_{g}.txt'
+    log:
+        'logs/sample_plot_gmethod_{g}.log'
+    shell:
+        'src/sample_plot_gmethod.sh {wildcards.g} {output} >& {log}'
+
+# bi_plot
+
+# proportion_plot
+
