@@ -4,7 +4,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-plasmids:20211002'
+container: 'docker://koki/tensor-project-plasmids:20211014'
 
 WORDSIZE = [str(x) for x in list(range(1, 5))]
 TYPES = ['host', 'plasmid']

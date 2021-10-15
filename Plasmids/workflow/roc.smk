@@ -5,11 +5,11 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-plasmids:20211012'
+container: 'docker://koki/tensor-project-plasmids:20211014'
 
 WORDSIZE = [str(x) for x in list(range(2, 5))]
 RANKS = [str(x) for x in list(range(1, 17))]
-PREVIOUS_METHODS = ['sigma_distance', 'mahalanobis_distance']
+PREVIOUS_METHODS = ['euclid_distance', 'sigma_distance', 'mahalanobis_distance', 'inner_product']
 NMF_METHODS = ['nmf_similarity', 'sinmf_similarity', 'jnmf_similarity']
 
 rule all:

@@ -7,5 +7,4 @@ snakemake -s workflow/rho.smk --rulegraph | dot -Tpng > plot/rho.png
 snakemake -s workflow/distance.smk --rulegraph | dot -Tpng > plot/distance.png
 snakemake -s workflow/nmf.smk --rulegraph | dot -Tpng > plot/nmf.png
 snakemake -s workflow/roc.smk --rulegraph | dot -Tpng > plot/roc.png
-
 snakemake -s workflow/plot.smk --rulegraph | dot -Tpng > plot/plot.png

@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-plasmids:20211002'
+container: 'docker://koki/tensor-project-plasmids:20211014'
 
 HOSTS = pd.read_csv('data/truepairs.txt', header=None,
     dtype='string', sep='|')
@@ -14,10 +14,26 @@ WORDSIZE = [str(x) for x in list(range(2, 5))]
 
 rule all:
     input:
+        expand('output/euclid_distance/{wordsize}mer.csv',
+            wordsize=WORDSIZE),
         expand('output/sigma_distance/{wordsize}mer.csv',
             wordsize=WORDSIZE),
         expand('output/mahalanobis_distance/{wordsize}mer.csv',
+            wordsize=WORDSIZE),
+        expand('output/inner_product/{wordsize}mer.csv',
             wordsize=WORDSIZE)
+
+rule euclid_distance:
+    output:
+         'output/euclid_distance/{wordsize}mer.csv'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/euclid_distance_{wordsize}.txt'
+    log:
+        'logs/euclid_distance_{wordsize}.log'
+    shell:
+        'src/euclid_distance.sh {wildcards.wordsize} {output} >& {log}'
 
 rule sigma_distance:
     output:
@@ -64,3 +80,15 @@ rule merge_mahalanobis_distance:
         'logs/merge_mahalanobis_distance_{wordsize}.log'
     shell:
         'src/merge_mahalanobis_distance.sh {wildcards.wordsize} >& {log}'
+
+rule inner_product:
+    output:
+         'output/inner_product/{wordsize}mer.csv'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/inner_product_{wordsize}.txt'
+    log:
+        'logs/inner_product_{wordsize}.log'
+    shell:
+        'src/inner_product.sh {wildcards.wordsize} {output} >& {log}'

@@ -26,7 +26,9 @@ SPECIES = ['at', 'pj']
 rule all:
     input:
         expand('plot/pca_{s}.png', s=SPECIES),
-        expand('plot/{g}.png', g=GMETHODS)
+        expand('plot/{g}.png', g=GMETHODS),
+        'plot/proportion_plot_at.png',
+        'plot/proportion_plot_pj.png'
 
 rule preprocess:
     output:
@@ -68,18 +70,6 @@ rule sample_plot_pca:
     shell:
         'src/sample_plot_pca.sh >& {log}'
 
-# rule sample_plot_nmf:
-#     input:
-#         'output/nmf.RData'
-#     output:
-#         'plot/nmf_{s}.png'
-#     benchmark:
-#         'benchmarks/sample_plot_nmf_{s}.txt'
-#     log:
-#         'logs/sample_plot_nmf_{s}.log'
-#     shell:
-#         'src/sample_plot_nmf.sh >& {log}'
-
 rule sample_plot_gmethod:
     input:
         'output/{g}.RData'
@@ -94,7 +84,16 @@ rule sample_plot_gmethod:
     shell:
         'src/sample_plot_gmethod.sh {wildcards.g} {output} >& {log}'
 
-# bi_plot
-
-# proportion_plot
-
+rule proportion_plot:
+    input:
+        expand('output/{g}.RData',
+            g=GMETHODS)
+    output:
+        'plot/proportion_plot_at.png',
+        'plot/proportion_plot_pj.png'
+    benchmark:
+        'benchmarks/proportion_plot.txt'
+    log:
+        'logs/proportion_plot.log'
+    shell:
+        'src/proportion_plot.sh >& {log}'

@@ -8,6 +8,8 @@ library("nnTensor")
 library("einsum")
 library("Rtsne")
 library("ROCR")
+library("ggplot2")
+library("ggbeeswarm")
 
 ROC <- function(score, actual){
     print("prediction")
@@ -21,6 +23,13 @@ ROC <- function(score, actual){
     list(auc=auc, x=x, y=y)
 }
 
+euclid_distance <- function(x, y){
+  A2 <- apply(x, 1, function(xx){norm(as.matrix(xx), "F")})^2
+  B2 <- apply(y, 1, function(yy){norm(as.matrix(yy), "F")})^2
+  AB <- x %*% t(y)
+  sqrt(outer(A2, B2, "+") - 2 * AB)
+}
+
 manhattan_distance <- function(x, y){
 	apply(y, 1, function(yy, x){
     	sum(abs(x - yy))
@@ -28,9 +37,9 @@ manhattan_distance <- function(x, y){
 }
 
 sigma_distance <- function(x, y, wordsize){
-	apply_pb(x, 1, function(xx){
+	t(apply_pb(x, 1, function(xx){
 	    manhattan_distance(xx, y)
-	}) / 4^wordsize
+	}) / 4^wordsize)
 }
 
 apply_pb <- function(X, MARGIN, FUN, ...)
@@ -54,7 +63,7 @@ apply_pb <- function(X, MARGIN, FUN, ...)
   res
 }
 
-euclid_distance <- function(x, y){
+euclid_distance2 <- function(x, y){
 	apply(y, 1, function(yy, x){
     	sqrt(sum((x - yy)^2))
 	}, x=x)
@@ -67,7 +76,7 @@ mahalanobis_distance <- function(seqs_host, kmer_plasmid, wordsize){
 	targetY <- grep("Freq", colnames(Y))
 	Y <- Y[, targetY]
 	if(is.vector(Y)){
-		out <- euclid_distance(Y, kmer_plasmid)
+		out <- euclid_distance2(Y, kmer_plasmid)
 	}else{
 		out <- mahalanobis(kmer_plasmid, center=apply(Y, 2, mean),
 		    cov=ginv(var(Y)), inverted=TRUE)
