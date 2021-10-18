@@ -25,15 +25,14 @@ snakemake -s workflow/plot.smk -j 4 --use-singularity
 In parallel environment (GridEngine):
 
 ```
-snakemake -s workflow/identifier.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/download.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/divide_plasmid_host.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/stats.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/rho.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-
-snakemake -s workflow/distance.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/evaluate.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
-snakemake -s workflow/plot.smk -j 32 --cluster qsub --latency-wait 600 --use-singularity
+snakemake -s workflow/identifier.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/download.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/divide_plasmid_host.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/stats.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/rho.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/distance.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/evaluate.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q large.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/plot.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
 ```
 
 In parallel environment (Slurm):

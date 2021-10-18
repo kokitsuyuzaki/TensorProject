@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-plasmids:20211014'
+container: 'docker://koki/tensor-projects-plasmids:20211018'
 
 WORDSIZE = [str(x) for x in list(range(2, 5))]
 RANKS = [str(x) for x in list(range(1, 17))]

@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-plasmids:20211014'
+container: 'docker://koki/tensor-projects-plasmids:20211018'
 
 FILES = pd.read_csv('data/truepairs.txt', header=None,
     dtype='string', sep='|', usecols=[0])[0]

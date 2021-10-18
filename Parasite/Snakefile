@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-project-parasite:20211013'
+container: 'docker://koki/tensor-projects-parasite:20211018'
 
 METHODS = ['pca',
     'time_guided_pca', 'wol_guided_pca',

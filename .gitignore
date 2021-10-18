@@ -7,4 +7,5 @@
 */benchmarks
 */data
 */output
-
+.wget-hsts
+*/.wget-hsts
