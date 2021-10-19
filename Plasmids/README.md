@@ -15,12 +15,11 @@ snakemake -s workflow/download.smk -j 4 --use-singularity
 snakemake -s workflow/divide_plasmid_host.smk -j 4 --use-singularity
 snakemake -s workflow/stats.smk -j 4 --use-singularity
 snakemake -s workflow/rho.smk -j 4 --use-singularity
-
 snakemake -s workflow/distance.smk -j 4 --use-singularity
-snakemake -s workflow/evaluate.smk -j 4 --use-singularity
+snakemake -s workflow/nmf.smk -j 4 --use-singularity
+snakemake -s workflow/roc.smk -j 4 --use-singularity
 snakemake -s workflow/plot.smk -j 4 --use-singularity
 ```
-
 
 In parallel environment (GridEngine):
 
@@ -31,7 +30,8 @@ snakemake -s workflow/divide_plasmid_host.smk -j 32 --cluster "qsub -l nc=4 -p -
 snakemake -s workflow/stats.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
 snakemake -s workflow/rho.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
 snakemake -s workflow/distance.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
-snakemake -s workflow/evaluate.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q large.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/nmf.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
+snakemake -s workflow/roc.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q large.q" --latency-wait 600 --use-singularity
 snakemake -s workflow/plot.smk -j 32 --cluster "qsub -l nc=4 -p -50 -r yes -q node.q" --latency-wait 600 --use-singularity
 ```
 
@@ -44,7 +44,8 @@ snakemake -s workflow/divide_plasmid_host.smk -j 32 --cluster sbatch --latency-w
 snakemake -s workflow/stats.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 snakemake -s workflow/rho.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 snakemake -s workflow/distance.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
-snakemake -s workflow/evaluate.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
+snakemake -s workflow/nmf.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
+snakemake -s workflow/roc.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 snakemake -s workflow/plot.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 ```
 # License
