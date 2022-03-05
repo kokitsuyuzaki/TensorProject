@@ -1,0 +1,92 @@
+import pandas as pd
+from snakemake.utils import min_version
+
+#
+# Setting
+#
+min_version("6.0.5")
+container: 'docker://koki/tensor-projects-machima:20220304'
+
+TOYDATA = ['toydata' + str(x) for x in list(range(1, 4))]
+METHODS = ['nmf_init', 'nmf_impute', 'bi_cca',  'bi_cca_supervised',
+'bi_jnmf', 'gromov_wasserstein']
+# METHODS = ['nmf_init', 'nmf_impute']
+
+rule all:
+    input:
+        expand('plot/{toydata}/{toydata}.png',
+            toydata=TOYDATA),
+        expand('plot/{toydata}/{m}_W.png',
+            toydata=TOYDATA, m=METHODS),
+        expand('plot/{toydata}/{m}_X_GAM.png',
+            toydata=TOYDATA, m=METHODS),
+
+rule toydata:
+    output:
+        out1='data/{toydata}/X_RNA.csv',
+        out2='data/{toydata}/X_GAM.csv',
+        out3='data/{toydata}/X_Epi.csv',
+        out4='data/{toydata}/W.csv',
+        out5='data/{toydata}/Winv.csv'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/toydata_{toydata}.txt'
+    log:
+        'logs/toydata_{toydata}.log'
+    shell:
+        'src/{wildcards.toydata}.sh >& {log}'
+
+rule plot_toydata:
+    input:
+        in1='data/{toydata}/X_RNA.csv',
+        in2='data/{toydata}/X_GAM.csv',
+        in3='data/{toydata}/X_Epi.csv',
+        in4='data/{toydata}/W.csv',
+        in5='data/{toydata}/Winv.csv'
+    output:
+        'plot/{toydata}/{toydata}.png'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_toydata_{toydata}.txt'
+    log:
+        'logs/plot_toydata_{toydata}.log'
+    shell:
+        'src/plot_toydata.sh {input} {output} >& {log}'
+
+rule method:
+    input:
+        in1='data/{toydata}/X_RNA.csv',
+        in2='data/{toydata}/X_Epi.csv'
+    output:
+        out1='output/{toydata}/{m}_W.csv',
+        out2='output/{toydata}/{m}_X_GAM.csv'
+    wildcard_constraints:
+        m='|'.join([re.escape(x) for x in METHODS])
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/{m}_{toydata}.txt'
+    log:
+        'logs/{m}_{toydata}.log'
+    shell:
+        'src/{wildcards.m}.sh {input} {output} >& {log}'
+
+rule plot_method:
+    input:
+        in1='output/{toydata}/{m}_W.csv',
+        in2='output/{toydata}/{m}_X_GAM.csv'
+    output:
+        out1='plot/{toydata}/{m}_W.png',
+        out2='plot/{toydata}/{m}_X_GAM.png'
+    wildcard_constraints:
+        m='|'.join([re.escape(x) for x in METHODS])
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_{m}_{toydata}.txt'
+    log:
+        'logs/plot_{m}_{toydata}.log'
+    shell:
+        'src/plot_method.sh {input} {output} >& {log}'

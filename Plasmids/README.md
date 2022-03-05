@@ -48,6 +48,7 @@ snakemake -s workflow/nmf.smk -j 32 --cluster sbatch --latency-wait 600 --use-si
 snakemake -s workflow/roc.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 snakemake -s workflow/plot.smk -j 32 --cluster sbatch --latency-wait 600 --use-singularity
 ```
+
 # License
 Copyright (c) 2021 Koki Tsuyuzaki [Artistic License 2.0](http://www.perlfoundation.org/artistic_license_2_0).
 

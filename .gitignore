@@ -1,3 +1,6 @@
+.Rapp.history
+*/.Rapp.history
+*/*/.Rapp.history
 .DS_Store
 */.DS_Store
 */snakejob*
@@ -9,3 +12,9 @@
 */output
 .wget-hsts
 */.wget-hsts
+Machima/toymodel
+Machima/machima
+Machima/bindSC
+Machima/bicca
+Machima/X_Epi.gif
+Machima/X_RNA.gif
