@@ -1,0 +1,79 @@
+container: "docker://koki/tensor-projects-vaccine:20220502"
+
+# Parameter
+CP_RANKS = [str(x) for x in list(range(1, 3))]
+TUCKER_RANKS_1 = [str(x) for x in list(range(1, 3))]
+TUCKER_RANKS_2 = [str(x) for x in list(range(1, 3))]
+TUCKER_RANKS_3 = [str(x) for x in list(range(1, 3))]
+K = 10
+KFOLDS = [str(x) for x in list(range(1, K+1))]
+
+rule all:
+	input:
+		'data/VaccineTensor.RData'
+		# expand('plot/{type}.png', type=['ntf', 'ntd'])
+
+rule preprocess:
+	output:
+		'data/VaccineTensor.RData'
+	benchmark:
+		'benchmarks/preprocess.txt'
+	resources:
+		mem_gb=500
+	log:
+		'logs/preprocess.log'
+	shell:
+		'src/preprocess.sh {output} > {log}'
+
+rule ntf:
+	input:
+		'data/VaccineTensor.RData'
+	output:
+		'output/ntf/{cp_rank}_{k}.RData'
+	benchmark:
+		'benchmarks/ntf/{cp_rank}_{k}.txt'
+	log:
+		'logs/ntf/{cp_rank}_{k}.log'
+	shell:
+		'src/ntf.sh {input} {output} {wildcards.cp_rank} {wildcards.k} > {log}'
+
+rule ntd:
+	input:
+		'data/VaccineTensor.RData'
+	output:
+		'output/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.RData'
+	benchmark:
+		'benchmarks/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.txt'
+	log:
+		'logs/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.log'
+	shell:
+		'src/ntd.sh {input} {output} {wildcards.tucker_rank1} {wildcards.tucker_rank2} {wildcards.tucker_rank3} {wildcards.k} > {log}'
+
+rule plot_ntf:
+	input:
+		expand('output/ntf/{cp_rank}_{k}.RData',
+			cp_rank=CP_RANKS, k=KFOLDS)
+	output:
+		'plot/ntf.png'
+	benchmark:
+		'benchmarks/ntf.txt'
+	log:
+		'logs/ntf.log'
+	shell:
+		'src/plot_ntf.sh > {log}'
+
+rule plot_ntd:
+	input:
+		expand('output/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.RData',
+			tucker_rank1=TUCKER_RANKS_1,
+			tucker_rank2=TUCKER_RANKS_2,
+			tucker_rank3=TUCKER_RANKS_3,
+			k=KFOLDS)
+	output:
+		'plot/ntd.png'
+	benchmark:
+		'benchmarks/ntd.txt'
+	log:
+		'logs/ntd.log'
+	shell:
+		'src/plot_ntd.sh > {log}'
