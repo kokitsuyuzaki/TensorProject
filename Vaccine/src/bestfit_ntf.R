@@ -1,21 +1,16 @@
 source("src/Functions.R")
+
 # Parameter
-infile <- commandArgs(trailingOnly=TRUE)[1]
-outfile <- commandArgs(trailingOnly=TRUE)[2]
-trials <- as.numeric(commandArgs(trailingOnly=TRUE)[3])
-r <- as.numeric(commandArgs(trailingOnly=TRUE)[4])
-k <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
-K <- as.numeric(commandArgs(trailingOnly=TRUE)[6])
+infile1 <- commandArgs(trailingOnly=TRUE)[1]
+infile2 <- commandArgs(trailingOnly=TRUE)[2]
+outfile <- commandArgs(trailingOnly=TRUE)[3]
+trials <- as.numeric(commandArgs(trailingOnly=TRUE)[4])
 
 # Loading
-load(infile)
-
-# Mask Tensor
-Ms <- kFoldMaskTensor(X, k=K, avoid.zero=TRUE, seeds=123)
-M <- Ms[[k]]
+load(infile1)
+load(infile2)
 
 # NTF
-# Generated NaN sometimes, if the rank is not optimal
 outList <- list()
 for(i in seq(trials)){
 	print(i)
@@ -23,7 +18,7 @@ for(i in seq(trials)){
 	count <- 1
 	tmp <- try(1 + "1")
 	while((class(tmp) == "try-error") && (count <= 10)){
-		tmp <- try(NTF(X=X, M=M, rank=r, algorithm="KL",
+		tmp <- try(NTF(X=X, rank=bestfit_rank, algorithm="KL",
 			init="Random", num.iter=20, L2_A=1e-5))
 		count <- count + 1
 	}

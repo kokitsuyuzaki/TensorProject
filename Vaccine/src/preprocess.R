@@ -8,7 +8,7 @@ outfile <- commandArgs(trailingOnly=TRUE)[1]
 X <- array(0, dim=c(12,14,1516))
 index <- 0:13
 for(i in index){
-	tmpX <- read.csv(paste0("data/", i, ".csv"), row.names=1)
+	tmpX <- read.csv(paste0("data/", i, "_data.csv"), row.names=1)
 	X[,i+1,] <- t(tmpX)
 }
 dimnames(X) <- list(

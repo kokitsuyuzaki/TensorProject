@@ -1,31 +1,11 @@
 source("src/Functions.R")
 
-TUCKER_RANKS_1 = 1:9
-TUCKER_RANKS_2 = 1:9
-TUCKER_RANKS_3 = 1:9
-K = 10
+# Parameter
+infile <- commandArgs(trailingOnly=TRUE)[1]
+outfile <- commandArgs(trailingOnly=TRUE)[2]
 
-tmp_testerror <- c()
-testerror <- c()
-for(i in TUCKER_RANKS_1){
-	for(j in TUCKER_RANKS_2){
-		for(k in TUCKER_RANKS_3){
-			for(l in seq(K)){
-				infile = paste0("output/ntd/", i, "_", j, "_", k, "_", l, ".RData")
-				load(infile)
-				tmp_testerror <- c(tmp_testerror, rev(out$TestRecError)[1])
-			}
-			testerror <- c(testerror, mean(tmp_testerror))
-			tmp_testerror <- c()
-		}
-	}
-}
-
-df <- data.frame(
-	expand.grid(TUCKER_RANKS_3, TUCKER_RANKS_2, TUCKER_RANKS_1)[,3:1],
-	Log10_TestRecError = log10(testerror))
-colnames(df) <- c("Rank1", "Rank2", "Rank3", "Log10_TestRecError")
-df$Log10_TestRecError <- round(df$Log10_TestRecError, 4)
+# Load
+load(infile)
 
 # ggplot
 g <- ggplot(df, aes(x=Rank1, y=Rank2))

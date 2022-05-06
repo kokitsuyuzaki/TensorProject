@@ -1,17 +1,30 @@
 container: "docker://koki/tensor-projects-vaccine:20220502"
 
 # Parameter
-CP_RANKS = [str(x) for x in list(range(1, 3))]
-TUCKER_RANKS_1 = [str(x) for x in list(range(1, 3))]
-TUCKER_RANKS_2 = [str(x) for x in list(range(1, 3))]
-TUCKER_RANKS_3 = [str(x) for x in list(range(1, 3))]
-K = 10
+CP_MAX_RANK = 9
+CP_RANKS = [str(x) for x in list(range(1, CP_MAX_RANK + 1))]
+TUCKER_MAX_RANK_1 = 9
+TUCKER_MAX_RANK_2 = 9
+TUCKER_MAX_RANK_3 = 9
+TUCKER_RANKS_1 = [str(x) for x in list(range(1, TUCKER_MAX_RANK_1 + 1))]
+TUCKER_RANKS_2 = [str(x) for x in list(range(1, TUCKER_MAX_RANK_2 + 1))]
+TUCKER_RANKS_3 = [str(x) for x in list(range(1, TUCKER_MAX_RANK_3 + 1))]
+K = 5
 KFOLDS = [str(x) for x in list(range(1, K+1))]
+TRIALS = 30
+DAYS = [str(x) for x in list(range(1, 15))]
+SYMPTOMS = [str(x) for x in list(range(1, 13))]
 
 rule all:
 	input:
-		'data/VaccineTensor.RData'
-		# expand('plot/{type}.png', type=['ntf', 'ntd'])
+		expand('plot/day_{day}.png',
+			day=DAYS),
+		expand('plot/symptom_{symptom}.png',
+			symptom=SYMPTOMS),
+		expand('plot/{type}.png',
+			type=['ntf', 'ntd']),
+		expand('plot/bestfit_{type}.png',
+			type=['ntf', 'ntd']),
 
 rule preprocess:
 	output:
@@ -25,6 +38,34 @@ rule preprocess:
 	shell:
 		'src/preprocess.sh {output} > {log}'
 
+rule plot_symptom:
+	input:
+		'data/VaccineTensor.RData'
+	output:
+		'plot/symptom_{symptom}.png'
+	benchmark:
+		'benchmarks/plot_symptom_{symptom}.txt'
+	resources:
+		mem_gb=500
+	log:
+		'logs/plot_symptom_{symptom}.log'
+	shell:
+		'src/plot_symptom.sh {input} {output} {wildcards.symptom} > {log}'
+
+rule plot_day:
+	input:
+		'data/VaccineTensor.RData'
+	output:
+		'plot/day_{day}.png'
+	benchmark:
+		'benchmarks/plot_day_{day}.txt'
+	resources:
+		mem_gb=500
+	log:
+		'logs/plot_day_{day}.log'
+	shell:
+		'src/plot_day.sh {input} {output} {wildcards.day} > {log}'
+
 rule ntf:
 	input:
 		'data/VaccineTensor.RData'
@@ -35,7 +76,7 @@ rule ntf:
 	log:
 		'logs/ntf/{cp_rank}_{k}.log'
 	shell:
-		'src/ntf.sh {input} {output} {wildcards.cp_rank} {wildcards.k} > {log}'
+		'src/ntf.sh {input} {output} {TRIALS} {wildcards.cp_rank} {wildcards.k} {K} > {log}'
 
 rule ntd:
 	input:
@@ -47,22 +88,22 @@ rule ntd:
 	log:
 		'logs/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.log'
 	shell:
-		'src/ntd.sh {input} {output} {wildcards.tucker_rank1} {wildcards.tucker_rank2} {wildcards.tucker_rank3} {wildcards.k} > {log}'
+		'src/ntd.sh {input} {output} {wildcards.tucker_rank1} {wildcards.tucker_rank2} {wildcards.tucker_rank3} {wildcards.k} {K} > {log}'
 
-rule plot_ntf:
+rule aggregate_ntf:
 	input:
 		expand('output/ntf/{cp_rank}_{k}.RData',
 			cp_rank=CP_RANKS, k=KFOLDS)
 	output:
-		'plot/ntf.png'
+		'output/ntf/ntf.RData'
 	benchmark:
-		'benchmarks/ntf.txt'
+		'benchmarks/aggregate_ntf.txt'
 	log:
-		'logs/ntf.log'
+		'logs/aggregate_ntf.log'
 	shell:
-		'src/plot_ntf.sh > {log}'
+		'src/aggregate_ntf.sh {CP_MAX_RANK} {K} {output} > {log}'
 
-rule plot_ntd:
+rule aggregate_ntd:
 	input:
 		expand('output/ntd/{tucker_rank1}_{tucker_rank2}_{tucker_rank3}_{k}.RData',
 			tucker_rank1=TUCKER_RANKS_1,
@@ -70,10 +111,108 @@ rule plot_ntd:
 			tucker_rank3=TUCKER_RANKS_3,
 			k=KFOLDS)
 	output:
+		'output/ntd/ntd.RData'
+	benchmark:
+		'benchmarks/aggregate_ntd.txt'
+	log:
+		'logs/aggregate_ntd.log'
+	shell:
+		'src/aggregate_ntd.sh {TUCKER_MAX_RANK_1} {TUCKER_MAX_RANK_3} {TUCKER_MAX_RANK_2} {K} {output} > {log}'
+
+rule plot_ntf:
+	input:
+		'output/ntf/ntf.RData'
+	output:
+		'plot/ntf.png'
+	benchmark:
+		'benchmarks/plot_ntf.txt'
+	log:
+		'logs/plot_ntf.log'
+	shell:
+		'src/plot_ntf.sh {input} {output} > {log}'
+
+rule plot_ntd:
+	input:
+		'output/ntd/ntd.RData'
+	output:
 		'plot/ntd.png'
 	benchmark:
-		'benchmarks/ntd.txt'
+		'benchmarks/plot_ntd.txt'
 	log:
-		'logs/ntd.log'
+		'logs/plot_ntd.log'
 	shell:
-		'src/plot_ntd.sh > {log}'
+		'src/plot_ntd.sh {input} {output} > {log}'
+
+rule bestfit_rank_ntf:
+	input:
+		'output/ntf/ntf.RData'
+	output:
+		'output/ntf/bestfit_rank.RData'
+	benchmark:
+		'benchmarks/bestfit_rank_ntf.txt'
+	log:
+		'logs/bestfit_rank_ntf.log'
+	shell:
+		'src/bestfit_rank_ntf.sh {input} {output} > {log}'
+
+rule bestfit_rank_ntd:
+	input:
+		'output/ntd/ntd.RData'
+	output:
+		'output/ntd/bestfit_rank.RData'
+	benchmark:
+		'benchmarks/bestfit_rank_ntd.txt'
+	log:
+		'logs/bestfit_rank_ntd.log'
+	shell:
+		'src/bestfit_rank_ntd.sh {input} {output} > {log}'
+
+rule bestfit_ntf:
+	input:
+		'data/VaccineTensor.RData',
+		'output/ntf/bestfit_rank.RData'
+	output:
+		'output/ntf/bestfit_ntf.RData'
+	benchmark:
+		'benchmarks/bestfit_ntf.txt'
+	log:
+		'logs/bestfit_ntf.log'
+	shell:
+		'src/bestfit_ntf.sh {input} {output} {TRIALS} > {log}'
+
+rule bestfit_ntd:
+	input:
+		'data/VaccineTensor.RData',
+		'output/ntd/bestfit_rank.RData'
+	output:
+		'output/ntd/bestfit_ntd.RData'
+	benchmark:
+		'benchmarks/bestfit_ntd.txt'
+	log:
+		'logs/bestfit_ntd.log'
+	shell:
+		'src/bestfit_ntd.sh {input} {output} {TRIALS} > {log}'
+
+rule plot_bestfit_ntf:
+	input:
+		'output/ntf/bestfit_ntf.RData'
+	output:
+		'plot/bestfit_ntf.png'
+	benchmark:
+		'benchmarks/plot_bestfit_ntf.txt'
+	log:
+		'logs/plot_bestfit_ntf.log'
+	shell:
+		'src/plot_bestfit_ntf.sh {input} {output} > {log}'
+
+rule plot_bestfit_ntd:
+	input:
+		'output/ntd/bestfit_ntd.RData'
+	output:
+		'plot/bestfit_ntd.png'
+	benchmark:
+		'benchmarks/plot_bestfit_ntd.txt'
+	log:
+		'logs/plot_bestfit_ntd.log'
+	shell:
+		'src/plot_bestfit_ntd.sh {input} {output} > {log}'
