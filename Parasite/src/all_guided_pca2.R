@@ -10,29 +10,29 @@ outfile <- args[1]
 # At
 D_At <- matrix(0, nrow=nrow(scaled_At_logTPM)+3+2+2, ncol=nrow(scaled_At_logTPM)+3+2+2)
 D_At[1:10000, 1:10000] <- scaled_At_logTPM %*% t(scaled_At_logTPM)
-D_At[10001:10003, 10001:10003] <- t(Y_At_time) %*% Y_At_time
-D_At[10004:10005, 10004:10005] <- t(Y_At_wol) %*% Y_At_wol
-D_At[10006:10007, 10006:10007] <- t(Y_At_parasm) %*% Y_At_parasm
+D_At[10001:10003, 10001:10003] <- t(scaled_Y_At_time) %*% scaled_Y_At_time
+D_At[10004:10005, 10004:10005] <- t(scaled_Y_At_wol) %*% scaled_Y_At_wol
+D_At[10006:10007, 10006:10007] <- t(scaled_Y_At_parasm) %*% scaled_Y_At_parasm
 
 C_At <- D_At
-C_At[1:10000, 10001:10003] <- scaled_At_logTPM %*% Y_At_time
-C_At[1:10000, 10004:10005] <- scaled_At_logTPM %*% Y_At_wol
-C_At[1:10000, 10006:10007] <- scaled_At_logTPM %*% Y_At_parasm
+C_At[1:10000, 10001:10003] <- scaled_At_logTPM %*% scaled_Y_At_time
+C_At[1:10000, 10004:10005] <- scaled_At_logTPM %*% scaled_Y_At_wol
+C_At[1:10000, 10006:10007] <- scaled_At_logTPM %*% scaled_Y_At_parasm
 
-C_At[10001:10003, 1:10000] <- t(Y_At_time) %*% t(scaled_At_logTPM)
-C_At[10001:10003, 10001:10003] <- t(Y_At_time) %*% Y_At_time
-C_At[10001:10003, 10004:10005] <- t(Y_At_time) %*% Y_At_wol
-C_At[10001:10003, 10006:10007] <- t(Y_At_time) %*% Y_At_parasm
+C_At[10001:10003, 1:10000] <- t(scaled_Y_At_time) %*% t(scaled_At_logTPM)
+C_At[10001:10003, 10001:10003] <- t(scaled_Y_At_time) %*% scaled_Y_At_time
+C_At[10001:10003, 10004:10005] <- t(scaled_Y_At_time) %*% scaled_Y_At_wol
+C_At[10001:10003, 10006:10007] <- t(scaled_Y_At_time) %*% scaled_Y_At_parasm
 
-C_At[10004:10005, 1:10000] <- t(Y_At_wol) %*% t(scaled_At_logTPM)
-C_At[10004:10005, 10001:10003] <- t(Y_At_wol) %*% Y_At_time
-C_At[10004:10005, 10004:10005] <- t(Y_At_wol) %*% Y_At_wol
-C_At[10004:10005, 10006:10007] <- t(Y_At_wol) %*% Y_At_parasm
+C_At[10004:10005, 1:10000] <- t(scaled_Y_At_wol) %*% t(scaled_At_logTPM)
+C_At[10004:10005, 10001:10003] <- t(scaled_Y_At_wol) %*% scaled_Y_At_time
+C_At[10004:10005, 10004:10005] <- t(scaled_Y_At_wol) %*% scaled_Y_At_wol
+C_At[10004:10005, 10006:10007] <- t(scaled_Y_At_wol) %*% scaled_Y_At_parasm
 
-C_At[10006:10007, 1:10000] <- t(Y_At_parasm) %*% t(scaled_At_logTPM)
-C_At[10006:10007, 10001:10003] <- t(Y_At_parasm) %*% Y_At_time
-C_At[10006:10007, 10004:10005] <- t(Y_At_parasm) %*% Y_At_wol
-C_At[10006:10007, 10006:10007] <- t(Y_At_parasm) %*% Y_At_parasm
+C_At[10006:10007, 1:10000] <- t(scaled_Y_At_parasm) %*% t(scaled_At_logTPM)
+C_At[10006:10007, 10001:10003] <- t(scaled_Y_At_parasm) %*% scaled_Y_At_time
+C_At[10006:10007, 10004:10005] <- t(scaled_Y_At_parasm) %*% scaled_Y_At_wol
+C_At[10006:10007, 10006:10007] <- t(scaled_Y_At_parasm) %*% scaled_Y_At_parasm
 
 print("geigen (At)")
 resmgPCA_At <- geigen::geigen(C_At, D_At, symmetric=FALSE, only.values=FALSE)

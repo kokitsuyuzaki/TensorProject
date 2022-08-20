@@ -7,7 +7,7 @@ outfile <- args[1]
 
 # guided-CCA
 resgCCA <- guidedCCA(t(scaled_At_logTPM), t(scaled_Pj_logTPM),
-    Y_At_time, Y_Pj_time, c(1,-1))
+    scaled_Y_At_time, scaled_Y_Pj_time, c(1,-1))
 score_At <- resgCCA$score1
 score_Pj <- resgCCA$score2
 

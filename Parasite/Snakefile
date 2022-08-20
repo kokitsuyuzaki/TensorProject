@@ -4,31 +4,25 @@ from snakemake.utils import min_version
 #
 # Setting
 #
-min_version("6.0.5")
-container: 'docker://koki/tensor-projects-parasite:20211018'
+min_version("6.5.3")
+container: 'docker://koki/tensor-projects-parasite:20220819'
 
-METHODS = ['pca',
-    'time_guided_pca', 'wol_guided_pca',
-    'parasm_guided_pca', 'all_guided_pca', 'all_guided_pca2',
-    'time_guided_cca', 'wol_guided_cca',
-    'parasm_guided_cca',
-    'time_guided_pls', 'wol_guided_pls',
-    'parasm_guided_pls']
-GMETHODS = [
-    'time_guided_pca', 'wol_guided_pca',
-    'parasm_guided_pca', 'all_guided_pca', 'all_guided_pca2',
-    'time_guided_cca', 'wol_guided_cca',
-    'parasm_guided_cca',
-    'time_guided_pls', 'wol_guided_pls',
-    'parasm_guided_pls']
+METHODS = ['pca', 'time_guided_pca', 'wol_guided_pca', 'parasm_guided_pca', 'all_guided_pca', "all_guided_pls", 'rbh_pls']
+GMETHODS = ['time_guided_pca', 'wol_guided_pca', 'parasm_guided_pca', 'all_guided_pca', "all_guided_pls", 'rbh_pls']
+ALLMETHODS = ['all_guided_pca', "all_guided_pls"]
 SPECIES = ['at', 'pj']
+DEGS = ['1d', '3d', '7d', 'wol', 'parasm']
 
 rule all:
     input:
         expand('plot/pca_{s}.png', s=SPECIES),
         expand('plot/{g}.png', g=GMETHODS),
-        'plot/proportion_plot_at.png',
-        'plot/proportion_plot_pj.png'
+        expand('plot/proportion_plot_{s}.png', s=SPECIES),
+        expand('plot/qc/{qc_metric}.png',
+            qc_metric=list(range(1, 11))),
+        expand('plot/heatmap/{g}.png', g=GMETHODS),
+        expand('plot/procambium/{g}.png', g=GMETHODS),
+        expand('plot/enrichment/finish_{a}', a=ALLMETHODS)
 
 rule preprocess:
     output:
@@ -38,9 +32,34 @@ rule preprocess:
     benchmark:
         'benchmarks/objects.txt'
     log:
-        'logs/objects.log'
+        'logs/preprocess.log'
     shell:
         'src/preprocess.sh >& {log}'
+
+rule qc_plot:
+    input:
+        'data/objects.RData'
+    output:
+        'plot/qc/{qc_metric}.png'
+    benchmark:
+        'benchmarks/qc_plot_{qc_metric}.txt'
+    log:
+        'logs/qc_plot_{qc_metric}.log'
+    shell:
+        'src/qc_plot.sh {wildcards.qc_metric} {output} >& {log}'
+
+rule deg:
+    input:
+        'data/objects.RData'
+    output:
+        'output/deg/p_{s}_{d}.RData',
+        'output/deg/q_{s}_{d}.RData'
+    benchmark:
+        'benchmarks/deg_{s}_{d}.txt'
+    log:
+        'logs/deg_{s}_{d}.log'
+    shell:
+        'src/deg.sh {wildcards.s} {wildcards.d} {output} >& {log}'
 
 rule method:
     input:
@@ -86,8 +105,7 @@ rule sample_plot_gmethod:
 
 rule proportion_plot:
     input:
-        expand('output/{g}.RData',
-            g=GMETHODS)
+        expand('output/{g}.RData', g=GMETHODS)
     output:
         'plot/proportion_plot_at.png',
         'plot/proportion_plot_pj.png'
@@ -97,3 +115,61 @@ rule proportion_plot:
         'logs/proportion_plot.log'
     shell:
         'src/proportion_plot.sh >& {log}'
+
+rule deg_heatmap:
+    input:
+        expand('output/deg/p_{s}_{d}.RData', s=SPECIES, d=DEGS),
+        'output/{g}.RData'
+    output:
+        'plot/heatmap/{g}.png'
+    wildcard_constraints:
+        g='|'.join([re.escape(x) for x in GMETHODS])
+    benchmark:
+        'benchmarks/deg_heatmap_{g}.txt'
+    log:
+        'logs/deg_heatmap_{g}.log'
+    shell:
+        'src/deg_heatmap.sh {wildcards.g} {output} >& {log}'
+
+rule deg_enrichment:
+    input:
+        expand('output/deg/p_{s}_{d}.RData', s=SPECIES, d=DEGS),
+        'output/{a}.RData'
+    output:
+        'output/enrichment/finish_{a}'
+    wildcard_constraints:
+        a='|'.join([re.escape(x) for x in ALLMETHODS])
+    benchmark:
+        'benchmarks/deg_enrichment_{a}.txt'
+    log:
+        'logs/deg_enrichment_{a}.log'
+    shell:
+        'src/deg_enrichment.sh {wildcards.a} {output} >& {log}'
+
+rule deg_enrichment_tagcloud:
+    input:
+        'output/enrichment/finish_{a}'
+    output:
+        'plot/enrichment/finish_{a}'
+    wildcard_constraints:
+        g='|'.join([re.escape(x) for x in GMETHODS])
+    benchmark:
+        'benchmarks/deg_enrichment_tagcloud_{a}.txt'
+    log:
+        'logs/deg_enrichment_tagcloud_{a}.log'
+    shell:
+        'src/deg_enrichment_tagcloud.sh {wildcards.a} {output} >& {log}'
+
+rule plot_procambium_score:
+    input:
+        'output/{g}.RData'
+    output:
+        'plot/procambium/{g}.png'
+    wildcard_constraints:
+        g='|'.join([re.escape(x) for x in GMETHODS])
+    benchmark:
+        'benchmarks/plot_procambium_score_{g}.txt'
+    log:
+        'logs/plot_procambium_score_{g}.log'
+    shell:
+        'src/plot_procambium_score.sh {wildcards.g} {output} >& {log}'
