@@ -19,7 +19,9 @@ Pj_TPM <- Pj_TPM[targetPj, ]
 At_logTPM <- At_logTPM[targetAt, ]
 Pj_logTPM <- Pj_logTPM[targetPj, ]
 
+####################################
 # RBH
+####################################
 orthtable <- unique(read.table("data/naist/Tosend20211025/TAIR10_Pjv1_RBH2.txt")[,1:2])
 
 targetRBH <- unlist(apply(orthtable, 1, function(x){
@@ -45,6 +47,25 @@ scaled_Pj_logTPM <- t(scale(t(Pj_logTPM), center=TRUE, scale=FALSE))
 
 scaled_At_logTPM_RBH <- t(scale(t(At_logTPM_RBH), center=TRUE, scale=FALSE))
 scaled_Pj_logTPM_RBH <- t(scale(t(Pj_logTPM_RBH), center=TRUE, scale=FALSE))
+
+####################################
+# Count table for DEGs
+####################################
+counts_all <- read.table("data/naist/counts_all.txt", header=TRUE)
+
+counts_At <- counts_all[30338:nrow(counts_all), c(1:9, 22:ncol(counts_all))]
+counts_Pj <- counts_all[seq(30337), c(10:21, 22:47)]
+
+counts_At <- counts_At[intersect(names(targetAt), rownames(counts_At)), ]
+counts_Pj <- counts_Pj[intersect(names(targetPj), rownames(counts_Pj)), ]
+
+####################################
+# Procambium gene set
+####################################
+procambium_At <- unique(read.csv("data/naist/Tosend20211025/Wendrich2020/Procambium.csv"))
+procambium_Pj <- unique(merge(orthtable, procambium_At, by.x="V1", by.y="gene_AT"))
+colnames(procambium_At)[1:2] <- c("GENEID", "SYMBOL")
+colnames(procambium_Pj)[1:3] <- c("GENEID_At", "GENEID", "SYMBOL")
 
 ####################################
 # QC metrics
@@ -267,33 +288,21 @@ names(label_At) <- c(
     rep("At_wol_root_7d", 4)
     )
 
-label_At[which(names(label_At) == "At_wt_root_1d")] <-
-    colorAt["At_wt_root_1d"]
-label_At[which(names(label_At) == "At_wt_root_3d")] <-
-    colorAt["At_wt_root_3d"]
-label_At[which(names(label_At) == "At_wt_root_7d")] <-
-    colorAt["At_wt_root_7d"]
+label_At[which(names(label_At) == "At_wt_root_1d")] <- colorAt["At_wt_root_1d"]
+label_At[which(names(label_At) == "At_wt_root_3d")] <- colorAt["At_wt_root_3d"]
+label_At[which(names(label_At) == "At_wt_root_7d")] <- colorAt["At_wt_root_7d"]
 
-label_At[which(names(label_At) == "At_wt_1d")] <-
-    colorAt["At_wt_1d"]
-label_At[which(names(label_At) == "At_wt_3d")] <-
-    colorAt["At_wt_3d"]
-label_At[which(names(label_At) == "At_wt_7d")] <-
-    colorAt["At_wt_7d"]
+label_At[which(names(label_At) == "At_wt_1d")] <- colorAt["At_wt_1d"]
+label_At[which(names(label_At) == "At_wt_3d")] <- colorAt["At_wt_3d"]
+label_At[which(names(label_At) == "At_wt_7d")] <- colorAt["At_wt_7d"]
 
-label_At[which(names(label_At) == "At_wol_1d")] <-
-    colorAt["At_wol_1d"]
-label_At[which(names(label_At) == "At_wol_3d")] <-
-    colorAt["At_wol_3d"]
-label_At[which(names(label_At) == "At_wol_7d")] <-
-    colorAt["At_wol_7d"]
+label_At[which(names(label_At) == "At_wol_1d")] <- colorAt["At_wol_1d"]
+label_At[which(names(label_At) == "At_wol_3d")] <- colorAt["At_wol_3d"]
+label_At[which(names(label_At) == "At_wol_7d")] <- colorAt["At_wol_7d"]
 
-label_At[which(names(label_At) == "At_wol_root_1d")] <-
-    colorAt["At_wol_root_1d"]
-label_At[which(names(label_At) == "At_wol_root_3d")] <-
-    colorAt["At_wol_root_3d"]
-label_At[which(names(label_At) == "At_wol_root_7d")] <-
-    colorAt["At_wol_root_7d"]
+label_At[which(names(label_At) == "At_wol_root_1d")] <- colorAt["At_wol_root_1d"]
+label_At[which(names(label_At) == "At_wol_root_3d")] <- colorAt["At_wol_root_3d"]
+label_At[which(names(label_At) == "At_wol_root_7d")] <- colorAt["At_wol_root_7d"]
 
 
 # label
@@ -313,35 +322,30 @@ names(label_Pj) <- c(
     rep("Pj_wol_3d", 5),
     rep("Pj_wol_7d", 6))
 
-label_Pj[which(names(label_Pj) == "Pj_root_1d")] <-
-    colorPj["Pj_root_1d"]
-label_Pj[which(names(label_Pj) == "Pj_root_3d")] <-
-    colorPj["Pj_root_3d"]
-label_Pj[which(names(label_Pj) == "Pj_root_7d")] <-
-    colorPj["Pj_root_7d"]
+label_Pj[which(names(label_Pj) == "Pj_root_1d")] <- colorPj["Pj_root_1d"]
+label_Pj[which(names(label_Pj) == "Pj_root_3d")] <- colorPj["Pj_root_3d"]
+label_Pj[which(names(label_Pj) == "Pj_root_7d")] <- colorPj["Pj_root_7d"]
 
-label_Pj[which(names(label_Pj) == "Pj_wt_1d")] <-
-    colorPj["Pj_wt_1d"]
-label_Pj[which(names(label_Pj) == "Pj_wt_3d")] <-
-    colorPj["Pj_wt_3d"]
-label_Pj[which(names(label_Pj) == "Pj_wt_7d")] <-
-    colorPj["Pj_wt_7d"]
+label_Pj[which(names(label_Pj) == "Pj_wt_1d")] <- colorPj["Pj_wt_1d"]
+label_Pj[which(names(label_Pj) == "Pj_wt_3d")] <- colorPj["Pj_wt_3d"]
+label_Pj[which(names(label_Pj) == "Pj_wt_7d")] <- colorPj["Pj_wt_7d"]
 
-label_Pj[which(names(label_Pj) == "Pj_wol_1d")] <-
-    colorPj["Pj_wol_1d"]
-label_Pj[which(names(label_Pj) == "Pj_wol_3d")] <-
-    colorPj["Pj_wol_3d"]
-label_Pj[which(names(label_Pj) == "Pj_wol_7d")] <-
-    colorPj["Pj_wol_7d"]
+label_Pj[which(names(label_Pj) == "Pj_wol_1d")] <- colorPj["Pj_wol_1d"]
+label_Pj[which(names(label_Pj) == "Pj_wol_3d")] <- colorPj["Pj_wol_3d"]
+label_Pj[which(names(label_Pj) == "Pj_wol_7d")] <- colorPj["Pj_wol_7d"]
 
 # Output
 save(
-    # Raw Data
+    # TPM Matrix
     At_TPM, Pj_TPM, At_logTPM, Pj_logTPM,
     scaled_At_logTPM, scaled_Pj_logTPM,
-    # Raw Data (RBH)
+    # TPM Matrix (RBH)
     At_TPM_RBH, Pj_TPM_RBH, At_logTPM_RBH, Pj_logTPM_RBH,
     scaled_At_logTPM_RBH, scaled_Pj_logTPM_RBH,
+    # Count Data Matrix
+    counts_At, counts_Pj,
+    # Procambium gene set
+    procambium_At, procambium_Pj,
     # QC metrics
     scores,
     # PCA

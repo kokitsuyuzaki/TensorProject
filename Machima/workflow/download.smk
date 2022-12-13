@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-projects-machima:20220716'
+container: 'docker://koki/tensor-projects-machima:20220827'
 
 BUIKCHIP_SAMPLES = ['ENCFF165VDC', 'ENCFF259JBE', 'ENCFF291LVP',
     'ENCFF298YTQ', 'ENCFF556EBC', 'ENCFF619ZKD', 'ENCFF636JEP',

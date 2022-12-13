@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-projects-machima:20220716'
+container: 'docker://koki/tensor-projects-machima:20220827'
 
 HISTONE_MODIFICATIONS = ['H3K27me3', 'H3K4me3']
 BINS = ['5000', '50000']

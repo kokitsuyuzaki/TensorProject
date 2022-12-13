@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-projects-machima:20220716'
+container: 'docker://koki/tensor-projects-machima:20220827'
 
 HISTONE_MODIFICATIONS = ['H3K27me3', 'H3K4me3']
 BINS = ['5000', '50000']
@@ -27,7 +27,19 @@ MACHIMA_MODES = ['machima', 'machima_fixwh',
     'machima_decay_5000_d0', 'machima_decay_5000_d0_fixwh',
     'machima_decay_50000_d0', 'machima_decay_50000_d0_fixwh',
     'machima_decay_500000_d0', 'machima_decay_500000_d0_fixwh',
-    'machima_enhancer', 'machima_enhancer_fixwh']
+    'machima_enhancer', 'machima_enhancer_fixwh',
+    'machima_gw_horizontal', 'machima_gw_fixwh_horizontal',
+    'machima_distance_50_horizontal', 'machima_distance_50_fixwh_horizontal',
+    'machima_distance_500_horizontal', 'machima_distance_500_fixwh_horizontal',
+    'machima_distance_5000_horizontal', 'machima_distance_5000_fixwh_horizontal',
+    'machima_distance_50000_horizontal', 'machima_distance_50000_fixwh_horizontal',
+    'machima_distance_500000_horizontal', 'machima_distance_500000_fixwh_horizontal',
+    'machima_decay_50_d0_horizontal', 'machima_decay_50_d0_fixwh_horizontal',
+    'machima_decay_500_d0_horizontal', 'machima_decay_500_d0_fixwh_horizontal',
+    'machima_decay_5000_d0_horizontal', 'machima_decay_5000_d0_fixwh_horizontal',
+    'machima_decay_50000_d0_horizontal', 'machima_decay_50000_d0_fixwh_horizontal',
+    'machima_decay_500000_d0_horizontal', 'machima_decay_500000_d0_fixwh_horizontal',
+    'machima_enhancer_horizontal', 'machima_enhancer_fixwh_horizontal']
 
 rule all:
     input:

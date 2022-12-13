@@ -15,13 +15,14 @@ DEGS = ['1d', '3d', '7d', 'wol', 'parasm']
 
 rule all:
     input:
-        expand('plot/pca_{s}.png', s=SPECIES),
-        expand('plot/{g}.png', g=GMETHODS),
+        expand('plot/scatter/pca/finish_{s}', s=SPECIES),
+        expand('plot/scatter/{g}/finish', g=GMETHODS),
         expand('plot/proportion_plot_{s}.png', s=SPECIES),
         expand('plot/qc/{qc_metric}.png',
             qc_metric=list(range(1, 11))),
-        expand('plot/heatmap/{g}.png', g=GMETHODS),
         expand('plot/procambium/{g}.png', g=GMETHODS),
+        expand('plot/heatmap/{g}.png', g=GMETHODS),
+        expand('plot/heatmap2/{g}.png', g=GMETHODS),
         expand('plot/enrichment/finish_{a}', a=ALLMETHODS)
 
 rule preprocess:
@@ -52,8 +53,7 @@ rule deg:
     input:
         'data/objects.RData'
     output:
-        'output/deg/p_{s}_{d}.RData',
-        'output/deg/q_{s}_{d}.RData'
+        'output/deg/{s}_{d}.RData'
     benchmark:
         'benchmarks/deg_{s}_{d}.txt'
     log:
@@ -81,19 +81,19 @@ rule sample_plot_pca:
     input:
         'output/pca.RData'
     output:
-        'plot/pca_{s}.png'
+        'plot/scatter/pca/finish_{s}'
     benchmark:
         'benchmarks/sample_plot_pca_{s}.txt'
     log:
         'logs/sample_plot_pca_{s}.log'
     shell:
-        'src/sample_plot_pca.sh >& {log}'
+        'src/sample_plot_pca.sh {output} >& {log}'
 
 rule sample_plot_gmethod:
     input:
         'output/{g}.RData'
     output:
-        'plot/{g}.png'
+        'plot/scatter/{g}/finish'
     wildcard_constraints:
         g='|'.join([re.escape(x) for x in GMETHODS])
     benchmark:
@@ -118,7 +118,7 @@ rule proportion_plot:
 
 rule deg_heatmap:
     input:
-        expand('output/deg/p_{s}_{d}.RData', s=SPECIES, d=DEGS),
+        expand('output/deg/{s}_{d}.RData', s=SPECIES, d=DEGS),
         'output/{g}.RData'
     output:
         'plot/heatmap/{g}.png'
@@ -131,9 +131,24 @@ rule deg_heatmap:
     shell:
         'src/deg_heatmap.sh {wildcards.g} {output} >& {log}'
 
+rule deg_heatmap2:
+    input:
+        expand('output/deg/{s}_{d}.RData', s=SPECIES, d=DEGS),
+        'output/{g}.RData'
+    output:
+        'plot/heatmap2/{g}.png'
+    wildcard_constraints:
+        g='|'.join([re.escape(x) for x in GMETHODS])
+    benchmark:
+        'benchmarks/deg_heatmap2_{g}.txt'
+    log:
+        'logs/deg_heatmap2_{g}.log'
+    shell:
+        'src/deg_heatmap2.sh {wildcards.g} {output} >& {log}'
+
 rule deg_enrichment:
     input:
-        expand('output/deg/p_{s}_{d}.RData', s=SPECIES, d=DEGS),
+        expand('output/deg/{s}_{d}.RData', s=SPECIES, d=DEGS),
         'output/{a}.RData'
     output:
         'output/enrichment/finish_{a}'

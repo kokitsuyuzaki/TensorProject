@@ -1,0 +1,250 @@
+import pandas as pd
+from snakemake.utils import min_version
+
+#################################
+# Setting
+#################################
+min_version("6.5.3")
+
+CP_MAX_RANK = 10
+CP_RANKS = [str(x) for x in list(range(1, CP_MAX_RANK + 1))]
+K = 5
+KFOLDS = [str(x) for x in list(range(1, K+1))]
+TRIALS = 5
+TRIALS2 = 50
+TRIAL_INDEX = [str(x) for x in list(range(1, TRIALS2+1))]
+
+container: 'docker://koki/tensor-projects-vaccine:20221128'
+
+rule all:
+    input:
+        'plot/ntf.png',
+        'plot/bestfit_ntf.png',
+        'plot/tensorly.png',
+        'plot/bestfit_tensorly.png'
+
+rule download:
+    output:
+        'data/CUH_SmartDR.xlsx'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/download.txt'
+    log:
+        'logs/download.log'
+    shell:
+        'src/download.sh >& {log}'
+
+rule preprocess:
+    input:
+        'data/CUH_SmartDR.xlsx'
+    output:
+        "data/metadata.csv",
+        "data/subjects.txt",
+        "data/symptoms.txt",
+        "data/days.txt",
+        "data/vaccine_tensor.npy",
+        "data/vaccine_tensor.RData"
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/preprocess.txt'
+    log:
+        'logs/preprocess.log'
+    shell:
+        'src/preprocess.sh {input} {output} >& {log}'
+
+rule ntf:
+    input:
+        "data/vaccine_tensor.RData"
+    output:
+        'output/ntf/{cp_rank}_{k}.RData'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/ntf_{cp_rank}_{k}.txt'
+    log:
+        'logs/ntf_{cp_rank}_{k}.log'
+    shell:
+        'src/ntf.sh {input} {output} {TRIALS} {wildcards.cp_rank} {wildcards.k} {K} > {log}'
+
+rule aggregate_ntf:
+    input:
+        expand('output/ntf/{cp_rank}_{k}.RData',
+            cp_rank=CP_RANKS, k=KFOLDS)
+    output:
+        'output/ntf/ntf.RData'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/aggregate_ntf.txt'
+    log:
+        'logs/aggregate_ntf.log'
+    shell:
+        'src/aggregate_ntf.sh {CP_MAX_RANK} {K} {output} > {log}'
+
+rule plot_ntf:
+    input:
+        'output/ntf/ntf.RData'
+    output:
+        'plot/ntf.png'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_ntf.txt'
+    log:
+        'logs/plot_ntf.log'
+    shell:
+        'src/plot_ntf.sh {input} {output} > {log}'
+
+rule bestfit_rank_ntf:
+    input:
+        'output/ntf/ntf.RData'
+    output:
+        'output/ntf/bestfit_rank.RData'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/bestfit_rank_ntf.txt'
+    log:
+        'logs/bestfit_rank_ntf.log'
+    shell:
+        'src/bestfit_rank_ntf.sh {input} {output} > {log}'
+
+rule bestfit_ntf:
+    input:
+        "data/vaccine_tensor.RData",
+        'output/ntf/bestfit_rank.RData'
+    output:
+        'output/ntf/bestfit_ntf.RData'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/bestfit_ntf.txt'
+    log:
+        'logs/bestfit_ntf.log'
+    shell:
+        'src/bestfit_ntf.sh {input} {output} {TRIALS} > {log}'
+
+rule plot_bestfit_ntf:
+    input:
+        "data/vaccine_tensor.RData",
+        'output/ntf/bestfit_ntf.RData'
+    output:
+        'plot/bestfit_ntf.png'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_bestfit_ntf.txt'
+    log:
+        'logs/plot_bestfit_ntf.log'
+    shell:
+        'src/plot_bestfit_ntf.sh {input} {output} > {log}'
+
+rule tensorly:
+    input:
+        "data/vaccine_tensor.npy"
+    output:
+        'output/tensorly/{cp_rank}/{t}.txt'
+    wildcard_constraints:
+        cp_rank='|'.join([re.escape(x) for x in CP_RANKS])
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/tensorly/{cp_rank}/{t}.txt'
+    log:
+        'logs/tensorly/{cp_rank}/{t}.log'
+    shell:
+        'src/tensorly.sh {input} {output} {wildcards.cp_rank} {K} > {log}'
+
+rule aggregate_tensorly:
+    input:
+        expand('output/tensorly/{cp_rank}/{t}.txt',
+            cp_rank=CP_RANKS, t=TRIAL_INDEX)
+    output:
+        'output/tensorly/tensorly.csv'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/aggregate_tensorly.txt'
+    log:
+        'logs/aggregate_tensorly.log'
+    shell:
+        'src/aggregate_tensorly.sh {CP_MAX_RANK} {TRIALS2} {output} > {log}'
+
+rule plot_tensorly:
+    input:
+        'output/tensorly/tensorly.csv'
+    output:
+        'plot/tensorly.png'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_tensorly.txt'
+    log:
+        'logs/plot_tensorly.log'
+    shell:
+        'src/plot_tensorly.sh {input} {output} > {log}'
+
+rule bestfit_rank_tensorly:
+    input:
+        'output/tensorly/tensorly.csv'
+    output:
+        'output/tensorly/bestfit_rank.txt'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/bestfit_rank_tensorly.txt'
+    log:
+        'logs/bestfit_rank_tensorly.log'
+    shell:
+        'src/bestfit_rank_tensorly.sh {input} {output} > {log}'
+
+rule bestfit_tensorly:
+    input:
+        "data/vaccine_tensor.npy",
+        'output/tensorly/bestfit_rank.txt'
+    output:
+        'output/tensorly/bestfit_rank/{t}/factor1.csv',
+        'output/tensorly/bestfit_rank/{t}/factor2.csv',
+        'output/tensorly/bestfit_rank/{t}/factor3.csv',
+        'output/tensorly/bestfit_rank/{t}/error.txt'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/bestfit_tensorly_{t}.txt'
+    log:
+        'logs/bestfit_tensorly_{t}.log'
+    shell:
+        'src/bestfit_tensorly.sh {input} {output} > {log}'
+
+rule select_bestfit_tensorly:
+    input:
+        expand('output/tensorly/bestfit_rank/{t}/error.txt',
+            t=TRIAL_INDEX)
+    output:
+        'output/tensorly/bestfit_rank/bestfit_trial.txt'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/select_bestfit_tensorly.txt'
+    log:
+        'logs/select_bestfit_tensorly.log'
+    shell:
+        'src/select_bestfit_tensorly.sh > {log}'
+
+rule plot_bestfit_tensorly:
+    input:
+        'output/tensorly/bestfit_rank/bestfit_trial.txt',
+        "data/symptoms.txt",
+        "data/days.txt"
+    output:
+        'plot/bestfit_tensorly.png'
+    resources:
+        mem_gb=100
+    benchmark:
+        'benchmarks/plot_bestfit_tensorly.txt'
+    log:
+        'logs/plot_bestfit_tensorly.log'
+    shell:
+        'src/plot_bestfit_tensorly.sh {input} {output} > {log}'

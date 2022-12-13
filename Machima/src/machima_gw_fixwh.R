@@ -7,11 +7,6 @@ hm <- commandArgs(trailingOnly=TRUE)[3]
 bin <- commandArgs(trailingOnly=TRUE)[4]
 outfile <- commandArgs(trailingOnly=TRUE)[5]
 
-# sc_sample = "Human_PBMC_2"
-# chip = "pseudoBulkChIPseq"
-# hm = "H3K4me3"
-# bin = 5000
-
 # File Name Setting
 infile1 <- paste0("data/scRNAseq/", sc_sample, "/Label.csv")
 chr <- paste0("chr", seq(22))

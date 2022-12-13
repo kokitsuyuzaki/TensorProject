@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.0.5")
-container: 'docker://koki/tensor-projects-machima:20220716'
+container: 'docker://koki/tensor-projects-machima:20220827'
 
 BINS = ['5000', '50000']
 SCRNA_SAMPLES = [

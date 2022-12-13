@@ -23,8 +23,8 @@ guidedPLS <- function(X1, X2, Y1, Y2, k, cortest=FALSE){
     YX1 <- scale(t(Y1) %*% X1, center=TRUE, scale=TRUE)
     YX2 <- scale(t(Y2) %*% X2, center=TRUE, scale=TRUE)
     # guided PLS
-    # res <- irlba(t(YX1) %*% YX2, k)
-    res <- svd(t(YX1) %*% YX2)
+    res <- irlba(t(YX1) %*% YX2, k)
+    # res <- svd(t(YX1) %*% YX2)
     # Loading
     # loading1 <- as.matrix(res$u)
     # loading2 <- as.matrix(res$v)
