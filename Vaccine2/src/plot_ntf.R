@@ -8,6 +8,7 @@ outfile <- commandArgs(trailingOnly=TRUE)[2]
 load(infile)
 
 # ggplot
+df$Rank <- str_sub(paste0("0", df$Rank), start = -2)
 g <- ggplot(df, aes(x=Rank, y=Log10_TestRecError, group=Rank))
 g <- g + geom_boxplot()
 g <- g + stat_summary(fun = median, geom = "line",

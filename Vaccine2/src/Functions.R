@@ -8,6 +8,7 @@ library("rTensor")
 library("nnTensor")
 library("ggplot2")
 library("viridis")
+library("stringr")
 
 # Setting
 metadata_name <- c("ID", "Sex", "AgeCategory", "BMICategory",
