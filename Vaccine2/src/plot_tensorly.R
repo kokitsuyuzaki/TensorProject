@@ -10,6 +10,7 @@ df <- pivot_longer(df, cols=seq(ncol(df)))
 colnames(df) <- c("Rank", "TestRecError")
 
 # ggplot
+df$Rank <- gsub("X", "", df$Rank)
 df$Rank <- str_sub(paste0("0", df$Rank), start = -2)
 g <- ggplot(df, aes(x=Rank, y=TestRecError, group=Rank))
 g <- g + geom_boxplot()
