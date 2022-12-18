@@ -10,4 +10,4 @@
 #SBATCH -p node03-06
 SLURM_RESTART_COUNT=2
 
-Rscript src/Model-5-A1A2G.R $@
+Rscript src/Model-7-A1A2G.R $@

@@ -10,8 +10,8 @@ outfile2 <- args[3]
 load(infile)
 
 # Parameter
-r1 <- 3
-r2 <- 4
+r2 <- 3
+r3 <- 4
 
 params <- new("CoupledMWCAParams",
     # Data-wise setting
@@ -25,7 +25,7 @@ params <- new("CoupledMWCAParams",
     common_iteration=list(A1=0, A2=30, A3=30),
     common_decomp=list(A1=FALSE, A2=TRUE, A3=TRUE),
     common_fix=list(A1=FALSE, A2=FALSE, A3=FALSE),
-    common_dims=list(A1=dim(LRTensor)[1], A2=r1, A3=r2),
+    common_dims=list(A1=dim(LRTensor)[1], A2=r2, A3=r3),
     common_transpose=list(A1=FALSE, A2=FALSE, A3=FALSE),
     common_coretype="Tucker",
     # Other option

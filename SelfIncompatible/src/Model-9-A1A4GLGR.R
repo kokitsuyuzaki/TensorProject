@@ -24,7 +24,7 @@ params <- new("CoupledMWCAParams",
     # Common Factor Matrices
     common_model=list(
         X1=list(I1="A1", I2="A2", I3="A3"),
-        X2=list(I5="A5", I4="A4", I3="A3")),
+        X2=list(I4="A4", I5="A5", I3="A3")),
     common_initial=list(A1=NULL, A2=NULL, A3=NULL, A4=NULL, A5=NULL),
     common_algorithms=list(A1="mySVD", A2="mySVD", A3="mySVD", A4="mySVD", A5="mySVD"),
     common_iteration=list(A1=30, A2=30, A3=30, A4=30, A5=30),
@@ -43,7 +43,9 @@ params <- new("CoupledMWCAParams",
 res <- CoupledMWCA(params)
 
 # Reshape
-X <- cbind(t(res@common_factors$A1), t(res@common_factors$A5))
+tmp1 <- einsum('ij,ikl->jkl', res@common_factors$A1, res@common_cores[[1]]@data)
+tmp2 <- einsum('ij,ikl->jkl', res@common_factors$A4, res@common_cores[[2]]@data)
+X <- cbind(rs_unfold(as.tensor(tmp1), m=1)@data, rs_unfold(as.tensor(tmp2), m=1)@data)
 
 # Save
 save(res, file=outfile1)
