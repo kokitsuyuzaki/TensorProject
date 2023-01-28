@@ -22,40 +22,46 @@ U_MODELS = [
     'Model-11-A1A4GLGR', 'Model-11-A1A4',
     'Model-PCA']
 
-# Supervised Models
-S_MODELS = ['Model-LDA', 'Model-PCALDA', 'Model-2DLDA']
-
 rule all:
     input:
-        expand('output/{u_model}.RData', u_model=U_MODELS),
-        expand('output/X_{u_model}.csv', u_model=U_MODELS),
-        expand('output/{s_model}.RData', s_model=S_MODELS),
-        expand('output/X_train_{s_model}.csv', s_model=S_MODELS),
-        expand('output/X_test_{s_model}.csv', s_model=S_MODELS)
+        expand('output/FINISH_X_{u_model}', u_model=U_MODELS)
 
-rule preprocess:
+rule preprocess_train:
     input:
         'data/sp11alnfinal90seq.aln',
         'data/SRKfinal_90seq.aln'
     output:
-        'data/inputTensors.RData'
+        'data/train_Tensors.RData'
     resources:
         mem_gb=50
     benchmark:
-        'benchmarks/preprocess.txt'
+        'benchmarks/preprocess_train.txt'
     log:
-        'logs/preprocess.log'
+        'logs/preprocess_train.log'
     shell:
-        'src/preprocess.sh {input} {output} >& {log}'
+        'src/preprocess_train.sh {input} {output} >& {log}'
 
-rule u_models:
+rule preprocess_test:
     input:
-        'data/inputTensors.RData'
+        'data/ArabiLigand_all_final_190seq.aln',
+        'data/ArabiReceptorFinal.aln'
     output:
-        'output/{u_model}.RData',
-        'output/X_{u_model}.csv'
-    wildcard_constraints:
-        u_model='|'.join([re.escape(x) for x in U_MODELS])
+        'data/test_Tensors.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/preprocess_test.txt'
+    log:
+        'logs/preprocess_test.log'
+    shell:
+        'src/preprocess_test.sh {input} {output} >& {log}'
+
+rule train_u_models:
+    input:
+        'data/train_Tensors.RData'
+    output:
+        'output/train_{u_model}.RData',
+        'output/train_X_{u_model}.csv'
     resources:
         mem_gb=50
     benchmark:
@@ -63,22 +69,34 @@ rule u_models:
     log:
         'logs/{u_model}.log'
     shell:
-        'src/{wildcards.u_model}.sh {input} {output} >& {log}'
+        'src/train_{wildcards.u_model}.sh {input} {output} >& {log}'
 
-rule s_models:
+rule test_u_models:
     input:
-        'data/inputTensors.RData'
+        'data/test_Tensors.RData',
+        'output/train_{u_model}.RData'
     output:
-        'output/{s_model}.RData',
-        'output/X_train_{s_model}.csv',
-        'output/X_test_{s_model}.csv'
-    wildcard_constraints:
-        s_model='|'.join([re.escape(x) for x in S_MODELS])
+        'output/test_X_{u_model}.csv'
     resources:
         mem_gb=50
     benchmark:
-        'benchmarks/{s_model}.txt'
+        'benchmarks/{u_model}.txt'
     log:
-        'logs/{s_model}.log'
+        'logs/{u_model}.log'
     shell:
-        'src/{wildcards.s_model}.sh {input} {output} >& {log}'
+        'src/test_{wildcards.u_model}.sh {input} {output} >& {log}'
+
+rule check_size:
+    input:
+        'output/train_X_{u_model}.csv',
+        'output/test_X_{u_model}.csv'
+    output:
+        'output/FINISH_X_{u_model}'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/check_size_{u_model}.txt'
+    log:
+        'logs/check_size_{u_model}.log'
+    shell:
+        'src/check_size.sh {input} {output} >& {log}'
