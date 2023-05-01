@@ -23,8 +23,15 @@ rule all:
         'plot/degs/FINISH',
         'plot/cc.png',
         'plot/cc_group.png',
-        'plot/plssvd/FINISH'
+        'plot/plssvd/FINISH',
+        'plot/venndiagram_1.png',
+        'plot/venndiagram_2.png',
+        'plot/venndiagram_3.png',
+        'plot/venndiagram_4.png'
 
+##############################
+######## Preprocessing #######
+##############################
 rule preprocess:
     input:
         'data/rpkm.tsv',
@@ -40,6 +47,9 @@ rule preprocess:
     shell:
         'src/preprocess.sh {input} {output} >& {log}'
 
+##############################
+########## Analysis ##########
+##############################
 rule pca:
     input:
         'data/objects.RData'
@@ -81,6 +91,44 @@ rule tsne:
         'logs/tsne.log'
     shell:
         'src/tsne.sh {input} {output} >& {log}'
+
+##############################
+######### DEG Methods ########
+##############################
+rule loading_plssvd:
+    input:
+        'data/objects.RData',
+        'output/plssvd.RData'
+    output:
+        'output/deg/plssvd_1.xlsx',
+        'output/deg/plssvd_2.xlsx',
+        'output/deg/plssvd_3.xlsx',
+        'output/deg/plssvd_4.xlsx'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/loading_plssvd.txt'
+    log:
+        'logs/loading_plssvd.log'
+    shell:
+        'src/loading_plssvd.sh {input} {output} >& {log}'
+
+rule wilcox:
+    input:
+        'data/objects.RData'
+    output:
+        'output/deg/wilcox_1.xlsx',
+        'output/deg/wilcox_2.xlsx',
+        'output/deg/wilcox_3.xlsx',
+        'output/deg/wilcox_4.xlsx'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/wilcox.txt'
+    log:
+        'logs/wilcox.log'
+    shell:
+        'src/wilcox.sh {input} {output} >& {log}'
 
 ############ Plot ############
 rule plot_data:
@@ -191,3 +239,27 @@ rule plot_loading_plssvd:
         'logs/plot_loading_plssvd.log'
     shell:
         'src/plot_loading_plssvd.sh {input} {output} >& {log}'
+
+rule plot_venndiagram:
+    input:
+        'output/deg/plssvd_1.xlsx',
+        'output/deg/plssvd_2.xlsx',
+        'output/deg/plssvd_3.xlsx',
+        'output/deg/plssvd_4.xlsx',
+        'output/deg/wilcox_1.xlsx',
+        'output/deg/wilcox_2.xlsx',
+        'output/deg/wilcox_3.xlsx',
+        'output/deg/wilcox_4.xlsx'
+    output:
+        'plot/venndiagram_1.png',
+        'plot/venndiagram_2.png',
+        'plot/venndiagram_3.png',
+        'plot/venndiagram_4.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_venndiagram.txt'
+    log:
+        'logs/plot_venndiagram.log'
+    shell:
+        'src/plot_venndiagram.sh {input} {output} >& {log}'

@@ -1,8 +1,11 @@
 library("guidedPLS")
 library("Rtsne")
-library("tagcloud")
-library("reshape2")
 library("ggplot2")
+library("reshape2")
+library("VennDiagram")
+library("readxl")
+library("writexl")
+library("enrichR")
 
 group <- c("naïve normal", "naïve claustrophobia",
 "shock highly claustrophobia", "shock mildly claustrophobia",
