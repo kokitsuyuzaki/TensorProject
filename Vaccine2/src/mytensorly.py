@@ -25,17 +25,23 @@ tnsr = np.load(infile)
 
 # Mask Tensor
 mask_tnsr = np.copy(tnsr)
-mask_tnsr = np.where(mask_tnsr != 0, 1, 0)
+mask_tnsr = np.where(np.isnan(mask_tnsr), 0, 1)
 
 # Setting for Random Sampling
-indices = np.nonzero(mask_tnsr)
+indices_non_zero = np.nonzero(tnsr)
+indices_non_nan = np.where(~np.isnan(tnsr))
+
+indices = np.where((tnsr != 0) & ~np.isnan(tnsr))
 sample_loc = list(range(len(indices[0])))
-no_sample = math.floor(len(indices[0]) / K)
+no_sample = math.floor(len(indices[0]) * 1 / K)
 
 # Add Noise to Mask Tensor
 mask_tnsr2 = np.copy(mask_tnsr)
 target = rd.sample(sample_loc, no_sample)
 mask_tnsr2[indices[0][target], indices[1][target], indices[2][target]] = 0
+
+# Assign 0 to nan
+tnsr = np.nan_to_num(tnsr, nan = 0)
 
 # Non-negative CP Decomposition
 # error = tsd.non_negative_parafac(tensor=tnsr, mask=mask_tnsr2, n_iter_max=1000,

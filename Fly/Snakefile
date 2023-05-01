@@ -1,0 +1,193 @@
+import pandas as pd
+from snakemake.utils import min_version
+
+#
+# Setting
+#
+min_version("6.5.3")
+container: 'docker://koki/tensor-projects-fly:20230501'
+
+rule all:
+    input:
+        'plot/data.png',
+        'plot/pca_group.png',
+        'plot/pca_pi.png',
+        'plot/pca_group_deg.png',
+        'plot/pca_pi_deg.png',
+        'plot/plssvd_group.png',
+        'plot/plssvd_pi.png',
+        'plot/plssvd_group_deg.png',
+        'plot/plssvd_pi_deg.png',
+        'plot/tsne.png',
+        'plot/tsne_deg.png',
+        'plot/degs/FINISH',
+        'plot/cc.png',
+        'plot/cc_group.png',
+        'plot/plssvd/FINISH'
+
+rule preprocess:
+    input:
+        'data/rpkm.tsv',
+        'data/label.tsv'
+    output:
+        'data/objects.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/preprocess.txt'
+    log:
+        'logs/preprocess.log'
+    shell:
+        'src/preprocess.sh {input} {output} >& {log}'
+
+rule pca:
+    input:
+        'data/objects.RData'
+    output:
+        'output/pca.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/pca.txt'
+    log:
+        'logs/pca.log'
+    shell:
+        'src/pca.sh {input} {output} >& {log}'
+
+rule plssvd:
+    input:
+        'data/objects.RData'
+    output:
+        'output/plssvd.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plssvd.txt'
+    log:
+        'logs/plssvd.log'
+    shell:
+        'src/plssvd.sh {input} {output} >& {log}'
+
+rule tsne:
+    input:
+        'output/pca.RData'
+    output:
+        'output/tsne.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/tsne.txt'
+    log:
+        'logs/tsne.log'
+    shell:
+        'src/tsne.sh {input} {output} >& {log}'
+
+############ Plot ############
+rule plot_data:
+    input:
+        'data/objects.RData'
+    output:
+        'plot/data.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_data.txt'
+    log:
+        'logs/plot_data.log'
+    shell:
+        'src/plot_data.sh {input} {output} >& {log}'
+
+rule plot_pca:
+    input:
+        'data/objects.RData',
+        'output/pca.RData'
+    output:
+        'plot/pca_group.png',
+        'plot/pca_pi.png',
+        'plot/pca_group_deg.png',
+        'plot/pca_pi_deg.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_pca.txt'
+    log:
+        'logs/plot_pca.log'
+    shell:
+        'src/plot_pca.sh {input} {output} >& {log}'
+
+rule plot_plssvd:
+    input:
+        'data/objects.RData',
+        'output/plssvd.RData'
+    output:
+        'plot/plssvd_group.png',
+        'plot/plssvd_pi.png',
+        'plot/plssvd_group_deg.png',
+        'plot/plssvd_pi_deg.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_plssvd.txt'
+    log:
+        'logs/plot_plssvd.log'
+    shell:
+        'src/plot_plssvd.sh {input} {output} >& {log}'
+
+rule plot_tsne:
+    input:
+        'data/objects.RData',
+        'output/tsne.RData'
+    output:
+        'plot/tsne.png',
+        'plot/tsne_deg.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_tsne.txt'
+    log:
+        'logs/plot_tsne.log'
+    shell:
+        'src/plot_tsne.sh {input} {output} >& {log}'
+
+rule plot_degs:
+    input:
+        'data/objects.RData'
+    output:
+        'plot/degs/FINISH'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_degs.txt'
+    log:
+        'logs/plot_degs.log'
+    shell:
+        'src/plot_degs.sh {input} {output} >& {log}'
+
+rule plot_cc:
+    input:
+        'data/objects.RData'
+    output:
+        'plot/cc.png',
+        'plot/cc_group.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_cc.txt'
+    log:
+        'logs/plot_cc.log'
+    shell:
+        'src/plot_cc.sh {input} {output} >& {log}'
+
+rule plot_loading_plssvd:
+    input:
+        'output/plssvd.RData'
+    output:
+        'plot/plssvd/FINISH'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_loading_plssvd.txt'
+    log:
+        'logs/plot_loading_plssvd.log'
+    shell:
+        'src/plot_loading_plssvd.sh {input} {output} >& {log}'

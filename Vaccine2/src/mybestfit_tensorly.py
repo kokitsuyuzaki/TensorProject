@@ -20,6 +20,9 @@ outfile4 = args[6]
 tnsr = np.load(infile1)
 cp_rank = int(np.loadtxt(infile2))
 
+# Assign 0 to nan
+tnsr = np.nan_to_num(tnsr, nan = 0)
+
 # Non-negative CP Decomposition
 res = tsd.non_negative_parafac(tensor=tnsr, n_iter_max=1000,
     rank=cp_rank, return_errors=True, init="svd", verbose=True)

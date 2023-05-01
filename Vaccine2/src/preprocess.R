@@ -24,9 +24,6 @@ vaccine_tensor %>% is.na %>% einsum('ijk->i', .) %>% `<`(thr) %>% which -> subje
 vaccine_tensor[subjects,,] %>% as.tensor -> vaccine_tensor
 metadata[subjects, ] -> metadata
 
-# NA => 0
-vaccine_tensor@data[is.na(vaccine_tensor@data)] <- 0
-
 # Dimension name
 dimnames(vaccine_tensor@data) <- list(subjects=subjects, symptoms=symptoms, days=days)
 
@@ -41,6 +38,9 @@ write.table(days, outfile4, row.names=FALSE, col.names=FALSE, quote=FALSE)
 # Save Python binary file
 np <- import("numpy")
 np$save(outfile5, r_to_py(vaccine_tensor@data)) # Type np.load() in Python
+
+# Assign 0 to NA
+vaccine_tensor@data[is.na(vaccine_tensor@data)] <- 0
 
 # Save R binary file
 save(vaccine_tensor, file=outfile6)
