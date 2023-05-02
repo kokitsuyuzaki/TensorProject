@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.5.3")
-container: 'docker://koki/tensor-projects-fly:20230501'
+container: 'docker://koki/tensor-projects-fly:20230502'
 
 rule all:
     input:
@@ -226,20 +226,6 @@ rule plot_cc:
     shell:
         'src/plot_cc.sh {input} {output} >& {log}'
 
-rule plot_loading_plssvd:
-    input:
-        'output/plssvd.RData'
-    output:
-        'plot/plssvd/FINISH'
-    resources:
-        mem_gb=50
-    benchmark:
-        'benchmarks/plot_loading_plssvd.txt'
-    log:
-        'logs/plot_loading_plssvd.log'
-    shell:
-        'src/plot_loading_plssvd.sh {input} {output} >& {log}'
-
 rule plot_venndiagram:
     input:
         'output/deg/plssvd_1.xlsx',
@@ -263,3 +249,22 @@ rule plot_venndiagram:
         'logs/plot_venndiagram.log'
     shell:
         'src/plot_venndiagram.sh {input} {output} >& {log}'
+
+rule plot_loading_plssvd:
+    input:
+        'data/objects.RData',
+        'output/plssvd.RData',
+        'output/deg/plssvd_1.xlsx',
+        'output/deg/plssvd_2.xlsx',
+        'output/deg/plssvd_3.xlsx',
+        'output/deg/plssvd_4.xlsx'
+    output:
+        'plot/plssvd/FINISH'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_loading_plssvd.txt'
+    log:
+        'logs/plot_loading_plssvd.log'
+    shell:
+        'src/plot_loading_plssvd.sh {input} {output} >& {log}'
