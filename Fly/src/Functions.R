@@ -6,7 +6,89 @@ library("VennDiagram")
 library("tagcloud")
 library("readxl")
 library("writexl")
-library("enrichR")
+library("qvalue")
+library("edgeR")
+library("DESeq2")
+
+# DEG
+DEG_PLSSVD <- function(count, res.plssvd, k, thr=0.1){
+	# All Gene
+	allgene <- data.frame(
+		genename=rownames(count),
+		pval=res.plssvd$pvalX[, k],
+		qval=res.plssvd$qvalX[, k])
+	rownames(allgene) <- NULL
+	# DEG
+	deg <- allgene[which(allgene$qval < thr), ]
+	# Top100 Gene
+	top100gene <- allgene[which(rank(allgene$qval) <= 100), ]
+	# Output
+	list(allgene=allgene, deg=deg, top100gene=top100gene)
+}
+
+DEG_Wilcox <- function(logcount, A, B, thr=0.1){
+	# All Gene
+	pval <- apply(logcount, 1, function(x){
+		wilcox.test(x[A], x[B])$p.value
+	})
+	allgene <- data.frame(
+		genename=rownames(logcount),
+		pval=pval,
+		qval=p.adjust(pval, "BH"))
+	rownames(allgene) <- NULL
+	# DEG
+	deg <- allgene[which(allgene$qval < thr), ]
+	# Top100 Gene
+	top100gene <- allgene[which(rank(allgene$qval) <= 100), ]
+	# Output
+	list(allgene=allgene, deg=deg, top100gene=top100gene)
+}
+
+DEG_edgeR <- function(count, A, B, thr=0.1){
+	# All Gene
+	group <- rep("A", length=ncol(count))
+	group[B] <- "B"
+	group <- factor(group)
+	design <- model.matrix(~ group)
+	d <- DGEList(counts = count, group = group)
+	d <- calcNormFactors(d)
+	d <- estimateDisp(d, design)
+	fit <- glmFit(d, design)
+	lrt <- glmLRT(fit, coef = 2)
+	allgene <- as.data.frame(topTags(lrt, n=nrow(lrt)))
+	allgene <- data.frame(
+		genename=rownames(logcount),
+		pval=allgene$PValue,
+		qval=allgene$FDR)
+	# DEG
+	deg <- allgene[which(allgene$qval < thr), ]
+	# Top100 Gene
+	top100gene <- allgene[which(rank(allgene$qval) <= 100), ]
+	# Output
+	list(allgene=allgene, deg=deg, top100gene=top100gene)
+}
+
+DEG_DESeq2 <- function(count, A, B, thr=0.1){
+	# All Gene
+	group <- rep("A", length=ncol(count))
+	group[B] <- "B"
+	group <- factor(group)
+	group <- data.frame(con = group)
+	dds <- DESeqDataSetFromMatrix(countData = count, colData = group, design = ~ con)
+	dds <- DESeq(dds)
+	res <- results(dds)
+	allgene <- as.data.frame(res)
+	allgene <- data.frame(
+		genename=rownames(logcount),
+		pval=allgene$pvalue,
+		qval=allgene$padj)
+	# DEG
+	deg <- allgene[which(allgene$qval < thr), ]
+	# Top100 Gene
+	top100gene <- allgene[which(rank(allgene$qval) <= 100), ]
+	# Output
+	list(allgene=allgene, deg=deg, top100gene=top100gene)
+}
 
 group <- c("naïve normal", "naïve claustrophobia",
 "shock highly claustrophobia", "shock mildly claustrophobia",

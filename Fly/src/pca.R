@@ -8,8 +8,8 @@ outfile <- args[2]
 load(infile)
 
 # PCA
-res.pca <- prcomp(t(logcount), center=TRUE, scale=FALSE)
-res.pca.deg <- prcomp(t(logcount.deg), center=TRUE, scale=FALSE)
+res.pca <- prcomp(t(logrpkm), center=TRUE, scale=FALSE)
+res.pca.deg <- prcomp(t(logrpkm.deg), center=TRUE, scale=FALSE)
 
 # Save
 save(res.pca, res.pca.deg, file=outfile)

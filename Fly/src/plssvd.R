@@ -8,8 +8,8 @@ outfile <- args[2]
 load(infile)
 
 # PLSSVD
-res.plssvd <- PLSSVD(X=t(logcount), Y=dummyY, k=5)
-res.plssvd.deg <- PLSSVD(X=t(logcount.deg), Y=dummyY, k=5)
+res.plssvd <- PLSSVD(X=t(logrpkm), Y=dummyY, k=5, cortest=TRUE)
+res.plssvd.deg <- PLSSVD(X=t(logrpkm.deg), Y=dummyY, k=5, cortest=TRUE)
 
 # Save
 save(res.plssvd, res.plssvd.deg, file=outfile)

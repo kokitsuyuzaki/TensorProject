@@ -1,8 +1,17 @@
 .Rapp.history
 */.Rapp.history
 */*/.Rapp.history
+*/*/*/.Rapp.history
+*/*/*/*/.Rapp.history
+*/*/*/*/*/.Rapp.history
 .DS_Store
 */.DS_Store
+*/*/.DS_Store
+*/*/*/.DS_Store
+*/*/*/*/.DS_Store
+*/*/*/*/*/.DS_Store
+*/*.sh.*
+*/plot
 */snakejob*
 */slurm*
 */.snakemake

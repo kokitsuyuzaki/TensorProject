@@ -5,7 +5,7 @@ from snakemake.utils import min_version
 # Setting
 #
 min_version("6.5.3")
-container: 'docker://koki/tensor-projects-fly:20230502'
+container: 'docker://koki/tensor-projects-fly:20230516'
 
 rule all:
     input:
@@ -18,6 +18,7 @@ rule all:
         'plot/plssvd_pi.png',
         'plot/plssvd_group_deg.png',
         'plot/plssvd_pi_deg.png',
+        'plot/plssvd_screeplot.png',
         'plot/tsne.png',
         'plot/tsne_deg.png',
         'plot/degs/FINISH',
@@ -27,13 +28,16 @@ rule all:
         'plot/venndiagram_1.png',
         'plot/venndiagram_2.png',
         'plot/venndiagram_3.png',
-        'plot/venndiagram_4.png'
+        'plot/venndiagram_4.png',
+        'plot/no_deg.png',
+        'output/deg/plssvdreg.xlsx'
 
 ##############################
 ######## Preprocessing #######
 ##############################
 rule preprocess:
     input:
+        'data/count.tsv',
         'data/rpkm.tsv',
         'data/label.tsv'
     output:
@@ -78,6 +82,20 @@ rule plssvd:
     shell:
         'src/plssvd.sh {input} {output} >& {log}'
 
+rule plssvd_reg:
+    input:
+        'data/objects.RData'
+    output:
+        'output/plssvd_reg.RData'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plssvd_reg.txt'
+    log:
+        'logs/plssvd_reg.log'
+    shell:
+        'src/plssvd_reg.sh {input} {output} >& {log}'
+
 rule tsne:
     input:
         'output/pca.RData'
@@ -113,6 +131,21 @@ rule loading_plssvd:
     shell:
         'src/loading_plssvd.sh {input} {output} >& {log}'
 
+rule loading_plssvdreg:
+    input:
+        'data/objects.RData',
+        'output/plssvd_reg.RData'
+    output:
+        'output/deg/plssvdreg.xlsx'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/loading_plssvdreg.txt'
+    log:
+        'logs/loading_plssvdreg.log'
+    shell:
+        'src/loading_plssvdreg.sh {input} {output} >& {log}'
+
 rule wilcox:
     input:
         'data/objects.RData'
@@ -129,6 +162,40 @@ rule wilcox:
         'logs/wilcox.log'
     shell:
         'src/wilcox.sh {input} {output} >& {log}'
+
+rule edger:
+    input:
+        'data/objects.RData'
+    output:
+        'output/deg/edger_1.xlsx',
+        'output/deg/edger_2.xlsx',
+        'output/deg/edger_3.xlsx',
+        'output/deg/edger_4.xlsx'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/edger.txt'
+    log:
+        'logs/edger.log'
+    shell:
+        'src/edger.sh {input} {output} >& {log}'
+
+rule deseq2:
+    input:
+        'data/objects.RData'
+    output:
+        'output/deg/deseq2_1.xlsx',
+        'output/deg/deseq2_2.xlsx',
+        'output/deg/deseq2_3.xlsx',
+        'output/deg/deseq2_4.xlsx'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/deseq2.txt'
+    log:
+        'logs/deseq2.log'
+    shell:
+        'src/deseq2.sh {input} {output} >& {log}'
 
 ############ Plot ############
 rule plot_data:
@@ -180,6 +247,20 @@ rule plot_plssvd:
         'logs/plot_plssvd.log'
     shell:
         'src/plot_plssvd.sh {input} {output} >& {log}'
+
+rule plot_screeplot_plssvd:
+    input:
+        'output/plssvd.RData'
+    output:
+        'plot/plssvd_screeplot.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_screeplot_plssvd.txt'
+    log:
+        'logs/plot_screeplot_plssvd.log'
+    shell:
+        'src/plot_screeplot_plssvd.sh {input} {output} >& {log}'
 
 rule plot_tsne:
     input:
@@ -235,7 +316,15 @@ rule plot_venndiagram:
         'output/deg/wilcox_1.xlsx',
         'output/deg/wilcox_2.xlsx',
         'output/deg/wilcox_3.xlsx',
-        'output/deg/wilcox_4.xlsx'
+        'output/deg/wilcox_4.xlsx',
+        'output/deg/edger_1.xlsx',
+        'output/deg/edger_2.xlsx',
+        'output/deg/edger_3.xlsx',
+        'output/deg/edger_4.xlsx',
+        'output/deg/deseq2_1.xlsx',
+        'output/deg/deseq2_2.xlsx',
+        'output/deg/deseq2_3.xlsx',
+        'output/deg/deseq2_4.xlsx'
     output:
         'plot/venndiagram_1.png',
         'plot/venndiagram_2.png',
@@ -249,6 +338,35 @@ rule plot_venndiagram:
         'logs/plot_venndiagram.log'
     shell:
         'src/plot_venndiagram.sh {input} {output} >& {log}'
+
+rule plot_no_deg:
+    input:
+        'output/deg/plssvd_1.xlsx',
+        'output/deg/plssvd_2.xlsx',
+        'output/deg/plssvd_3.xlsx',
+        'output/deg/plssvd_4.xlsx',
+        'output/deg/wilcox_1.xlsx',
+        'output/deg/wilcox_2.xlsx',
+        'output/deg/wilcox_3.xlsx',
+        'output/deg/wilcox_4.xlsx',
+        'output/deg/edger_1.xlsx',
+        'output/deg/edger_2.xlsx',
+        'output/deg/edger_3.xlsx',
+        'output/deg/edger_4.xlsx',
+        'output/deg/deseq2_1.xlsx',
+        'output/deg/deseq2_2.xlsx',
+        'output/deg/deseq2_3.xlsx',
+        'output/deg/deseq2_4.xlsx'
+    output:
+        'plot/no_deg.png'
+    resources:
+        mem_gb=50
+    benchmark:
+        'benchmarks/plot_no_deg.txt'
+    log:
+        'logs/plot_no_deg.log'
+    shell:
+        'src/plot_no_deg.sh {input} {output} >& {log}'
 
 rule plot_loading_plssvd:
     input:

@@ -3,18 +3,24 @@ source("src/Functions.R")
 args <- commandArgs(trailingOnly = TRUE)
 infile1 <- args[1]
 infile2 <- args[2]
-outfile <- args[3]
+infile3 <- args[3]
+outfile <- args[4]
 
 # Load
-count <- read.delim(infile1, header=TRUE, row.names=1)
-count <- as.matrix(count)
-label <- read.delim(infile2, header=FALSE, row.names=1)
-label <- as.matrix(label)
+count <- as.matrix(read.delim(infile1, header=TRUE, row.names=1))
+rpkm <- as.matrix(read.delim(infile2, header=TRUE, row.names=1))
+label <- as.matrix(read.delim(infile3, header=FALSE, row.names=1))
+
+count <- count[sort(rownames(count)), ]
+rpkm <- rpkm[sort(rownames(rpkm)), ]
 
 # Convert
 logcount <- log10(count + 1)
+logrpkm <- log10(rpkm + 1)
 count.deg <- count[deg.genes, ]
+rpkm.deg <- rpkm[deg.genes, ]
 logcount.deg <- log10(count.deg + 1)
+logrpkm.deg <- log10(rpkm.deg + 1)
 
 # Dummy Variables
 dummyY <- matrix(0, nrow=ncol(count), ncol=5)
@@ -35,9 +41,12 @@ col.group[which(col.group == "C")] <- "#FDAE61"
 col.group[which(col.group == "D")] <- "#F46D43"
 col.group[which(col.group == "E")] <- "#9E0142"
 
-col.pi <- smoothPalette(-as.numeric(unlist(label[3, ])), pal="RdBu")
+PI <- as.numeric(unlist(label[3, ]))
+
+col.pi <- smoothPalette(-PI, pal="RdBu")
 names(col.pi) <- names(col.group)
 
 # Save
 save(count, logcount, count.deg, logcount.deg,
-	label, dummyY, col.group, col.pi, file=outfile)
+	rpkm, logrpkm, rpkm.deg, logrpkm.deg,
+	label, dummyY, PI, col.group, col.pi, file=outfile)
