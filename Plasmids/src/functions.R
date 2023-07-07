@@ -36,7 +36,7 @@ manhattan_distance <- function(x, y){
 	}, x=x)
 }
 
-sigma_distance <- function(x, y, wordsize){
+delta_distance <- function(x, y, wordsize){
 	t(apply_pb(x, 1, function(xx){
 	    manhattan_distance(xx, y)
 	}) / 4^wordsize)
@@ -69,12 +69,15 @@ euclid_distance2 <- function(x, y){
 	}, x=x)
 }
 
-mahalanobis_distance <- function(seqs_host, kmer_plasmid, wordsize){
-	Y <- rollapply(data = seqs_host[[1]],
-		 width = 5000, by = 5000,
-		 FUN = function(x){rho(c(x, ' ', rev(comp(x))), wordsize = wordsize)})
-	targetY <- grep("Freq", colnames(Y))
-	Y <- Y[, targetY]
+host_matrix <- function(seqs_host, wordsize){
+  Y <- rollapply(data = seqs_host[[1]],
+    width = 5000, by = 5000,
+    FUN = function(x){rho(c(x, ' ', rev(comp(x))), wordsize = wordsize)})
+  targetY <- grep("Freq", colnames(Y))
+  Y <- Y[, targetY]
+}
+
+mahalanobis_distance <- function(Y, kmer_plasmid, wordsize){
 	if(is.vector(Y)){
 		out <- euclid_distance2(Y, kmer_plasmid)
 	}else{
@@ -82,4 +85,40 @@ mahalanobis_distance <- function(seqs_host, kmer_plasmid, wordsize){
 		    cov=ginv(var(Y)), inverted=TRUE)
 	}
 	t(out)
+}
+
+lowrank_mahalanobis_distance <- function(Y, kmer_plasmid, wordsize, thr=0.95){
+	if(is.vector(Y)){
+		out <- euclid_distance2(Y, kmer_plasmid)
+	}else{
+		out <- .lowrank_mahalanobis(Y, kmer_plasmid, thr)
+	}
+	t(out)
+}
+
+.lowrank_mahalanobis <- function(Y, kmer_plasmid, thr){
+    # Centering
+    centerY <- apply(Y, 2, mean)
+    scaledY <- t(t(Y) - centerY)
+    scaled_kmer_plasmid <- t(t(kmer_plasmid) - centerY)
+    # SVD
+    out_svd <- try(svd(scaledY))
+    if(class(out_svd) != "try-error"){
+      # Truncated
+      d <- which(cumsum(out_svd$d)/sum(out_svd$d) <= thr)
+      if(length(d) == 0){
+        max_d <- length(out_svd$d)
+      }else{
+        max_d <- max(d)
+      }
+      # Dimensional Reduction
+      score <- t(t(scaled_kmer_plasmid %*% out_svd$v[, seq_len(max_d)]) * (sqrt(nrow(Y)) / out_svd$d[seq_len(max_d)]))
+      # Distance from centerY
+      out <- apply(score, 1, function(x){
+        sqrt(sum(x^2))
+      })
+    }else{
+      out <- t(rep(1E+10, length=nrow(kmer_plasmid)))
+    }
+    out
 }

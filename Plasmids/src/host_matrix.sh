@@ -10,4 +10,4 @@
 #SBATCH -p node03-06
 SLURM_RESTART_COUNT=2
 
-Rscript src/previous_roc.R $@
+Rscript src/host_matrix.R $@

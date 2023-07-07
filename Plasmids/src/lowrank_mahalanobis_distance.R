@@ -16,8 +16,8 @@ filename <- paste0("data/", wordsize, "mer_plasmid.csv")
 kmer_plasmid <- as.matrix(read.csv(filename, header=TRUE, row.names=1))
 
 # Distance
-mahalanobis_dist <- mahalanobis_distance(Y, kmer_plasmid, wordsize)
-rownames(mahalanobis_dist) <- hostid
+lowrank_mahalanobis_dist <- lowrank_mahalanobis_distance(Y, kmer_plasmid, wordsize)
+rownames(lowrank_mahalanobis_dist) <- hostid
 
 # Output
-write.csv(mahalanobis_dist, outfile)
+write.csv(lowrank_mahalanobis_dist, outfile)

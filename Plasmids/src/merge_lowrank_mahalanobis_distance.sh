@@ -10,4 +10,4 @@
 #SBATCH -p node03-06
 SLURM_RESTART_COUNT=2
 
-Rscript src/sigma_distance.R $@
+awk 'NR==1 || FNR!=1' "output/lowrank_mahalanobis_distance/"*"/"$1"mer.csv" >> "output/lowrank_mahalanobis_distance/"$1"mer.csv"

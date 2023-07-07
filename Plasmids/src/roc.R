@@ -2,10 +2,10 @@ source("src/functions.R")
 
 args <- commandArgs(trailingOnly = TRUE)
 
-previous_method <- args[1]
+method <- args[1]
 wordsize <- as.numeric(args[2])
 outfile <- args[3]
-file <- paste0("output/", previous_method, "/", wordsize, "mer.csv")
+file <- paste0("output/", method, "/", wordsize, "mer.csv")
 
 # file loading
 print("read.csv")
@@ -21,9 +21,11 @@ names(score) <- as.vector(outer(rownames(distances), colnames(distances), paste)
 # ROC
 actual <- score
 actual[] <- 0
+
 print("intersect")
 target <- intersect(truepairs, names(score))
 actual[target] <- 1
+
 print("ROC")
 out <- ROC(score, actual)
 

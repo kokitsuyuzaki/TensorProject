@@ -16,7 +16,7 @@ URL=`grep $FILE data/ftpfilepaths.txt`
 
 cd data/$DIR
 
-sleep $(($RANDOM % 180))
+sleep $(($RANDOM % 120))
 axel -n 6 $URL -o $FILE
 
 if [ -e $FILE ]; then

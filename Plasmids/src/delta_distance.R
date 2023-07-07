@@ -15,7 +15,7 @@ kmer_host <- as.matrix(kmer_host)
 kmer_plasmid <- as.matrix(kmer_plasmid)
 
 # Distance
-sigma_dist <- sigma_distance(kmer_host, kmer_plasmid, wordsize)
+delta_dist <- delta_distance(kmer_host, kmer_plasmid, wordsize)
 
 # Output
-write.csv(sigma_dist, outfile)
+write.csv(delta_dist, outfile)

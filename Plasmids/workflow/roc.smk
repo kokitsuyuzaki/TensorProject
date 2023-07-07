@@ -9,36 +9,21 @@ container: 'docker://koki/tensor-projects-plasmids:20211018'
 
 WORDSIZE = [str(x) for x in list(range(2, 5))]
 RANKS = [str(x) for x in list(range(1, 17))]
-PREVIOUS_METHODS = ['euclid_distance', 'sigma_distance', 'mahalanobis_distance', 'inner_product']
-NMF_METHODS = ['nmf_similarity', 'sinmf_similarity', 'jnmf_similarity']
+METHODS = ['inner_product', 'euclid_distance', 'delta_distance', 'mahalanobis_distance', 'lowrank_mahalanobis_distance', 'mcd_mahalanobis_distance']
 
 rule all:
     input:
-    	expand('output/{previous}/roc/{wordsize}mer.RData',
-    		previous=PREVIOUS_METHODS, wordsize=WORDSIZE),
-    	expand('output/{nmf}/roc/{wordsize}mer_{rank}.RData',
-    		nmf=NMF_METHODS, wordsize=WORDSIZE, rank=RANKS)
+    	expand('output/{m}/roc/{wordsize}mer.RData',
+    		m=METHODS, wordsize=WORDSIZE),
 
-rule previous_roc:
+rule roc:
     output:
-        'output/{previous}/roc/{wordsize}mer.RData'
+        'output/{m}/roc/{wordsize}mer.RData'
     resources:
         mem_gb=50
     benchmark:
-        'benchmarks/previous_roc_{previous}_{wordsize}mer.txt'
+        'benchmarks/roc_{m}_{wordsize}mer.txt'
     log:
-        'logs/previous_roc_{previous}_{wordsize}mer.log'
+        'logs/roc_{m}_{wordsize}mer.log'
     shell:
-        'src/previous_roc.sh {wildcards.previous} {wildcards.wordsize} {output} >& {log}'
-
-rule nmf_roc:
-    output:
-        'output/{nmf}/roc/{wordsize}mer_{rank}.RData'
-    resources:
-        mem_gb=50
-    benchmark:
-        'benchmarks/nmf_roc_{nmf}_{wordsize}mer_{rank}.txt'
-    log:
-        'logs/nmf_roc_{nmf}_{wordsize}mer_{rank}.log'
-    shell:
-        'src/nmf_roc.sh {wildcards.nmf} {wildcards.wordsize} {wildcards.rank} {output} >& {log}'
+        'src/roc.sh {wildcards.m} {wildcards.wordsize} {output} >& {log}'
